@@ -22,6 +22,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import GraphIcon from "@mui/icons-material/Timeline";
 import NetworkIcon from "@mui/icons-material/NetworkCheck";
 import PersonIcon from "@mui/icons-material/Person";
+import DeviceNetwork from "../components/deviceGraph";
 
 const drawerWidth = 240;
 
@@ -172,7 +173,9 @@ function DashboardContent() {
           }}
         >
           <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}></Container>
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <DeviceNetwork />
+          </Container>
         </Box>
       </Box>
     </ThemeProvider>

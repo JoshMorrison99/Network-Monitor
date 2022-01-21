@@ -1,6 +1,8 @@
 from sys import platform
 import scapy.all as scapy
 import os
+from ipaddress import IPv4Network
+import socket
 
 OS = platform
 
@@ -19,26 +21,60 @@ def get_os():
                 print(currentOS, file=f)
         f.close()
 
-# https://scapy.readthedocs.io/en/latest/usage.html?highlight=ARP#arp-ping
-def network_scan():
-    # scapy.Ether(dst="ff:ff:ff:ff:ff:ff") --> this is a broadcast frame --> https://networkencyclopedia.com/broadcast-frame/#:~:text=In%20Ethernet%20networks%2C%20Broadcast%20Frame,on%20the%20network%20of%20computers.
-    # 192.168.1.0 --> 192.168.1.0 - 192.168.1.254
-    answered, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst="192.168.1.0/24"),timeout=2)
-    print("Source MAC address: " + answered[0][1].hwsrc)
 
-    erase_text_file("user_information/Devices.txt")
+# ARP scan is the fastest way to scan ETHERNET
+def arp_network_scan():
+    answered, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst="192.168.2.0/24"),timeout=2)
+    answered.summary(lambda s,r: r.sprintf("%Ether.src% %ARP.psrc%") )
+
+    erase_text_file("user_information/Ethernet_Devices.txt")
 
     for element in answered:
-        with open("user_information/Devices.txt", "a") as f:
-            # psrc is the source IP address
-            # element[1] are all the received packets from answered list
-            # element[0] are all the sent packets from answered list
+        with open("user_information/ARP_Devices.txt", "a") as f:
             print(element[1].psrc, file=f)
     f.close()
+
+# ICMP scan is needed because ARP will only scan ethernet, but this software wants all devices.
+def icmp_network_scan(ip_range):
+    network = ip_range
+    addresses = IPv4Network(network)
+    devices = []
+
+    for ip in addresses:
+        response = scapy.sr1(scapy.IP(dst=str(ip))/scapy.ICMP(),timeout=2, verbose=0)
+        if(response is None):
+           print(f"{ip} is not up")
+        else:
+            print(f"{ip} is up") 
+            devices.append(str(ip))
+
+    erase_text_file("user_information/ICMP_Devices.txt")
+
+    for device in devices:
+        with open("user_information/ICMP_Devices.txt", "a") as f:
+            print(device, file=f)
+    f.close()
+    
+
+def get_router_IP_address():
+    erase_text_file("user_information/RouterIP.txt")
+    with open("user_information/RouterIP.txt", "a") as f:
+        print(scapy.conf.route.route("0.0.0.0")[2], file=f)
+    f.close()
+
+# def hostname_lookup_from_IP():
+#     f = open("user_information/Devices.txt", 'r')
+#     lines = f.readlines()
+#     for line in lines:
+#         print(line.strip("\n"))
+#         try:
+#             print(socket.gethostbyaddr(line).strip("\n"))
+#         except:
+#             print("no hostname for ", line.strip("\n"))
 
 
 def erase_text_file(file_to_erase):
     file = open(file_to_erase,"w")
     file.close()
 
-print(network_scan())
+icmp_network_scan("192.168.2.0/24")
