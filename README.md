@@ -1,12 +1,20 @@
 # Home Network Monitoring Software
 
-## Josh Morrison
+## Josh Morrison - 101083525
 
-### 101083525
+### How to use:
 
-Technlogies Used:
+1. git clone https://github.com/JoshMorrison99/Network-Monitor.git
+2. npm install
+3. npm run start
 
-- React.js
-- Next.js
-- MaterialUI
+### Technlogies Used:
+
+- Javascript
+  - React.js
+  - Next.js
+  - d3.js
+  - MaterialUI
+- Python
+  - Scapy
 - Git
