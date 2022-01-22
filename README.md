@@ -18,3 +18,4 @@
 - Python
   - Scapy
 - Git
+- Nmap --> for verification purposes
