@@ -21,6 +21,7 @@ const graph = {
   links: [
     { source: "192.168.2.1", target: "192.168.2.12" },
     { source: "192.168.2.1", target: "192.168.2.16" },
+    { source: "192.168.2.1", target: "192.168.2.17" },
     { source: "192.168.2.1", target: "192.168.2.30" },
     { source: "192.168.2.1", target: "192.168.2.32" },
     { source: "192.168.2.1", target: "192.168.2.116" },
@@ -33,7 +34,7 @@ const graph = {
   ],
 };
 
-const ForceGraph = () => {
+const ForceGraph = (props) => {
   const [animatedNodes, setAnimatedNodes] = useState([]);
   const [animatedLinks, setAnimatedLinks] = useState([]);
 
@@ -44,15 +45,13 @@ const ForceGraph = () => {
         "link",
         d3.forceLink(graph.links).id((d) => d.ip)
       )
-      .force("charge", d3.forceManyBody().strength(-30))
-      .force("center", d3.forceCenter(200, 200));
+      .force("charge", d3.forceManyBody().strength(-5000))
+      .force("center", d3.forceCenter(400, 400));
 
     // update state on every frame
     simulation.on("tick", () => {
       setAnimatedNodes([...simulation.nodes()]);
       setAnimatedLinks([...d3.forceLink(graph.links).links()]);
-      console.log(d3.forceLink(graph.links).links());
-      console.log(simulation.nodes());
     });
 
     // slow down with a small alpha
@@ -65,13 +64,7 @@ const ForceGraph = () => {
     <Fragment>
       <g>
         {animatedNodes.map((node) => (
-          <circle
-            cx={node.x}
-            cy={node.y}
-            r={5}
-            stroke="black"
-            fill="transparent"
-          />
+          <circle cx={node.x} cy={node.y} r={30} stroke="black" fill="black" />
         ))}
       </g>
       <g>
@@ -84,6 +77,13 @@ const ForceGraph = () => {
             stroke="black"
             stroke-width={0.5}
           />
+        ))}
+      </g>
+      <g>
+        {animatedNodes.map((node) => (
+          <text x={node.x - 45} y={node.y - 35}>
+            {node.ip}
+          </text>
         ))}
       </g>
     </Fragment>
