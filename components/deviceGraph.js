@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, Fragment } from "react";
 import * as d3 from "d3";
 
 // Update the data inside the useEffect metho
@@ -35,7 +35,7 @@ const graph = {
 
 const ForceGraph = () => {
   const [animatedNodes, setAnimatedNodes] = useState([]);
-  //const [animatedLinks, setAnimatedLinks] = useState([]);
+  const [animatedLinks, setAnimatedLinks] = useState([]);
 
   useEffect(() => {
     const simulation = d3
@@ -50,12 +50,11 @@ const ForceGraph = () => {
     // update state on every frame
     simulation.on("tick", () => {
       setAnimatedNodes([...simulation.nodes()]);
-      //setAnimatedLinks([...simulation.links()]);
+      setAnimatedLinks([...d3.forceLink(graph.links).links()]);
+      console.log(d3.forceLink(graph.links).links());
+      console.log(simulation.nodes());
     });
 
-    // copy nodes into simulation
-    simulation.nodes([...graph.nodes]);
-    simulation.nodes([...graph.links]);
     // slow down with a small alpha
     simulation.alpha(0.1).restart();
 
@@ -63,17 +62,31 @@ const ForceGraph = () => {
     return () => simulation.stop();
   }, []);
   return (
-    <g>
-      {animatedNodes.map((node) => (
-        <circle
-          cx={node.x}
-          cy={node.y}
-          r={5}
-          stroke="black"
-          fill="transparent"
-        />
-      ))}
-    </g>
+    <Fragment>
+      <g>
+        {animatedNodes.map((node) => (
+          <circle
+            cx={node.x}
+            cy={node.y}
+            r={5}
+            stroke="black"
+            fill="transparent"
+          />
+        ))}
+      </g>
+      <g>
+        {animatedLinks.map((line) => (
+          <line
+            x1={line.source.x}
+            y1={line.source.y}
+            x2={line.target.x}
+            y2={line.target.y}
+            stroke="black"
+            stroke-width={0.5}
+          />
+        ))}
+      </g>
+    </Fragment>
   );
 };
 
