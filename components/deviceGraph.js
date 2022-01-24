@@ -64,7 +64,14 @@ const ForceGraph = (props) => {
     <Fragment>
       <g>
         {animatedNodes.map((node) => (
-          <circle cx={node.x} cy={node.y} r={30} stroke="black" fill="black" />
+          <circle
+            cx={node.x}
+            cy={node.y}
+            r={30}
+            stroke="black"
+            fill="black"
+            onClick={() => nodeClicked(node.ip)}
+          />
         ))}
       </g>
       <g>
@@ -90,52 +97,8 @@ const ForceGraph = (props) => {
   );
 };
 
-// const ForceGraph = () => {
-//   const ref = useRef();
-
-//   useEffect(() => {
-//     const simulation = d3
-//       .forceSimulation(graph.nodes)
-//       .force(
-//         "link",
-//         d3.forceLink(graph.links).id((d) => d.ip)
-//       )
-//       .force("charge", d3.forceManyBody().strength(-30))
-//       .force("center", d3.forceCenter(200, 200))
-//       .on("tick", ticked);
-
-//     const svg = d3.select(ref.current).attr("width", 500).attr("height", 500);
-
-//     const link = svg
-//       .append("g")
-//       .selectAll("line")
-//       .data(graph.links)
-//       .enter()
-//       .append("line")
-//       .attr("stroke-width", 3)
-//       .style("stroke", "pink");
-
-//     const node = svg
-//       .append("g")
-//       .selectAll("circle")
-//       .data(graph.nodes)
-//       .enter()
-//       .append("circle")
-//       .attr("r", 10)
-//       .attr("fill", "orange")
-//       .style("stroke", "yellow");
-
-//     const ticked = () => {
-//       link
-//         .attr("x1", (d) => d.source.x)
-//         .attr("y1", (d) => d.source.x)
-//         .attr("x2", (d) => d.target.x)
-//         .attr("y2", (d) => d.target.x);
-
-//       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-//     };
-//   }, []);
-//   return <svg ref={ref} />;
-// };
+const nodeClicked = (nodeIP) => {
+  console.log(nodeIP + " node clicked");
+};
 
 export default ForceGraph;
