@@ -173,9 +173,9 @@ function DashboardContent() {
           }}
         >
           <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+          <svg width="800" height="600">
             <DeviceNetwork />
-          </Container>
+          </svg>
         </Box>
       </Box>
     </ThemeProvider>
