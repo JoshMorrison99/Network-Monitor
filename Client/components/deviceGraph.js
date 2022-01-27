@@ -17,24 +17,20 @@ const CreateLinks = (graph) => {
   }
 
   var new_graph = { nodes: nodes, links: links };
-  console.log(new_graph);
   return new_graph;
 };
 
 const ForceGraph = (props) => {
   const [animatedNodes, setAnimatedNodes] = useState([]);
   const [animatedLinks, setAnimatedLinks] = useState([]);
-  const [counter, setCounter] = useState([]);
+  const [counter, setCounter] = useState(0);
   const [graph, setGraph] = useState({});
 
   const Get_Devices = async () => {
-    console.log("yes");
     try {
       const response = await axios.get("http://localhost:8000/api/devicelist/");
       var new_graph = CreateLinks(response);
-      console.log("-->", new_graph);
       setGraph(() => new_graph);
-      console.log(graph);
     } catch (err) {
       console.log(err);
     }
@@ -42,9 +38,11 @@ const ForceGraph = (props) => {
 
   const timer = () => {
     setCounter(counter + 1);
+    console.log(counter);
     console.log("Polling...");
-    if (counter == 30) {
+    if (counter == 2) {
       // runs every 5 minutes
+      console.log("getting devices");
       Get_Devices();
       setCounter(0);
     }
