@@ -1,42 +1,46 @@
 import React, { useRef, useEffect, useState, Fragment } from "react";
 import * as d3 from "d3";
+var graph = require("../user_information/devices.json");
+
+console.log(graph);
 
 // Update the data inside the useEffect metho
-const graph = {
-  nodes: [
-    { ip: "192.168.2.1" },
-    { ip: "192.168.2.12" },
-    { ip: "192.168.2.16" },
-    { ip: "192.168.2.17" },
-    { ip: "192.168.2.30" },
-    { ip: "192.168.2.32" },
-    { ip: "192.168.2.116" },
-    { ip: "192.168.2.188" },
-    { ip: "192.168.2.206" },
-    { ip: "192.168.2.236" },
-    { ip: "192.168.2.238" },
-    { ip: "192.168.2.239" },
-    { ip: "192.168.2.246" },
-  ],
-  links: [
-    { source: "192.168.2.1", target: "192.168.2.12" },
-    { source: "192.168.2.1", target: "192.168.2.16" },
-    { source: "192.168.2.1", target: "192.168.2.17" },
-    { source: "192.168.2.1", target: "192.168.2.30" },
-    { source: "192.168.2.1", target: "192.168.2.32" },
-    { source: "192.168.2.1", target: "192.168.2.116" },
-    { source: "192.168.2.1", target: "192.168.2.188" },
-    { source: "192.168.2.1", target: "192.168.2.206" },
-    { source: "192.168.2.1", target: "192.168.2.236" },
-    { source: "192.168.2.1", target: "192.168.2.238" },
-    { source: "192.168.2.1", target: "192.168.2.239" },
-    { source: "192.168.2.1", target: "192.168.2.246" },
-  ],
-};
+// const graph = {
+//   nodes: [
+//     { ip: "192.168.2.1" },
+//     { ip: "192.168.2.12" },
+//     { ip: "192.168.2.16" },
+//     { ip: "192.168.2.17" },
+//     { ip: "192.168.2.30" },
+//     { ip: "192.168.2.32" },
+//     { ip: "192.168.2.116" },
+//     { ip: "192.168.2.188" },
+//     { ip: "192.168.2.206" },
+//     { ip: "192.168.2.236" },
+//     { ip: "192.168.2.238" },
+//     { ip: "192.168.2.239" },
+//     { ip: "192.168.2.246" },
+//   ],
+//   links: [
+//     { source: "192.168.2.1", target: "192.168.2.12" },
+//     { source: "192.168.2.1", target: "192.168.2.16" },
+//     { source: "192.168.2.1", target: "192.168.2.17" },
+//     { source: "192.168.2.1", target: "192.168.2.30" },
+//     { source: "192.168.2.1", target: "192.168.2.32" },
+//     { source: "192.168.2.1", target: "192.168.2.116" },
+//     { source: "192.168.2.1", target: "192.168.2.188" },
+//     { source: "192.168.2.1", target: "192.168.2.206" },
+//     { source: "192.168.2.1", target: "192.168.2.236" },
+//     { source: "192.168.2.1", target: "192.168.2.238" },
+//     { source: "192.168.2.1", target: "192.168.2.239" },
+//     { source: "192.168.2.1", target: "192.168.2.246" },
+//   ],
+// };
 
 const ForceGraph = (props) => {
   const [animatedNodes, setAnimatedNodes] = useState([]);
   const [animatedLinks, setAnimatedLinks] = useState([]);
+  const [counter, setCounter] = useState(0);
 
   useEffect(() => {
     const simulation = d3
@@ -58,7 +62,9 @@ const ForceGraph = (props) => {
     simulation.alpha(0.1).restart();
 
     // stop simulation on unmount
-    return () => simulation.stop();
+    return () => {
+      simulation.stop();
+    };
   }, []);
   return (
     <Fragment>
