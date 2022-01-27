@@ -16,6 +16,7 @@
   - d3.js
   - MaterialUI
   - Axios
+  - UUID
 - Python
   - Scapy
   - Django

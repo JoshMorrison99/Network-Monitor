@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, Fragment } from "react";
 import axios from "axios";
 import useInterval from "react-useinterval";
 import * as d3 from "d3";
+import { v4 as uuidv4 } from "uuid";
 
 const CreateLinks = (graph) => {
   var nodes = [];
@@ -36,13 +37,23 @@ const ForceGraph = (props) => {
     }
   };
 
+  const Scan_Devices = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/devicescan/");
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const timer = () => {
     setCounter(counter + 1);
     console.log(counter);
     console.log("Polling...");
-    if (counter == 2) {
-      // runs every 5 minutes
+    if (counter == 60) {
+      // runs every 10 minutes
       console.log("getting devices");
+      Scan_Devices();
       Get_Devices();
       setCounter(0);
     }
@@ -85,9 +96,10 @@ const ForceGraph = (props) => {
             cx={node.x}
             cy={node.y}
             r={30}
+            key={uuidv4()}
             stroke="black"
             fill="black"
-            onClick={() => nodeClicked(node.ip)}
+            onClick={() => nodeClicked(node)}
           />
         ))}
       </g>
@@ -98,14 +110,15 @@ const ForceGraph = (props) => {
             y1={line.source.y}
             x2={line.target.x}
             y2={line.target.y}
+            key={uuidv4()}
             stroke="black"
-            stroke-width={0.5}
+            strokeWidth={0.5}
           />
         ))}
       </g>
       <g>
         {animatedNodes.map((node) => (
-          <text x={node.x - 45} y={node.y - 35}>
+          <text x={node.x - 45} y={node.y - 35} key={uuidv4()}>
             {node.ip}
           </text>
         ))}
@@ -114,8 +127,8 @@ const ForceGraph = (props) => {
   );
 };
 
-const nodeClicked = (nodeIP) => {
-  console.log(nodeIP + " node clicked");
+const nodeClicked = (node) => {
+  console.log(node);
 };
 
 export default ForceGraph;

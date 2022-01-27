@@ -173,7 +173,7 @@ function DashboardContent() {
           }}
         >
           <Toolbar />
-          <svg width="100%" height="auto">
+          <svg width="100%" height="100%">
             <DeviceNetwork />
           </svg>
         </Box>
