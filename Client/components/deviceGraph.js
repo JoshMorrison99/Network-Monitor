@@ -8,10 +8,17 @@ console.log(graph);
 const ForceGraph = (props) => {
   const [animatedNodes, setAnimatedNodes] = useState([]);
   const [animatedLinks, setAnimatedLinks] = useState([]);
+  const [counter, setCounter] = useState([]);
 
   const timer = () => {
+    setCounter(counter + 1);
     graph = require("../user_information/devices.json");
     console.log("Polling...");
+    if (counter == 30) {
+      // runs every 5 minutes
+      console.log("Executing Python");
+      setCounter(0);
+    }
   };
 
   useInterval(timer, 10000);

@@ -17,5 +17,6 @@
   - MaterialUI
 - Python
   - Scapy
+  - Django
 - Git
 - Nmap --> for verification purposes
