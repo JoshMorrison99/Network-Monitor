@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
+from ServerApp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('devices/', include('devices.urls'))
+    path('api/devicelist/', views.DeviceList),
+    path('api/devicescan/', views.DeviceScan)
 ]

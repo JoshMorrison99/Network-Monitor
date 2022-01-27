@@ -15,6 +15,7 @@
   - Next.js
   - d3.js
   - MaterialUI
+  - Axios
 - Python
   - Scapy
   - Django

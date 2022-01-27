@@ -1,9 +1,18 @@
 import React, { useRef, useEffect, useState, Fragment } from "react";
+import axios from "axios";
 import useInterval from "react-useinterval";
 import * as d3 from "d3";
 var graph = require("../user_information/devices.json");
 
-console.log(graph);
+const Get_Devices = async () => {
+  try {
+    const response = await axios.get("http://localhost:8000/devices");
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+Get_Devices();
 
 const ForceGraph = (props) => {
   const [animatedNodes, setAnimatedNodes] = useState([]);

@@ -1,0 +1,5 @@
+{
+  "CLIENT": 3001,
+  "SERVER": 8000,
+  "DEFAULT_GATEWAY": "192.168.2.1"
+}

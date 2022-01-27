@@ -3,6 +3,7 @@ from ipaddress import IPv4Network
 import json
 
 class DeviceScan:
+
     def icmp_network_scan(self, ip_range):
         network = ip_range
         addresses = IPv4Network(network)
@@ -22,14 +23,11 @@ class DeviceScan:
             data["nodes"].append({"ip":device})
             data["links"].append({"source":"192.168.2.1", "target": device})
 
-        with open('../user_information/devices.json', "w") as f:
+        with open('../Client/user_information/devices.json', "w") as f:
             json_string = json.dumps(data)
             print(json_string, file=f)
             f.close()
 
     def __init__(self):
-        print("Running Script")
         self.icmp_network_scan("192.168.2.0/24")
-    
 
-print("hello")

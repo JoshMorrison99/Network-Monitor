@@ -6,3 +6,4 @@ package-lock.json
 # SERVER
 __pycache__
 Server/db.sqlite3
+settings.py
