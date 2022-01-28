@@ -1,12 +1,14 @@
 import * as React from "react";
 import { Fragment } from "react";
+import DeviceComponent from "../components/DevicesComponent";
 import LayoutComponent from "../components/LayoutComponent";
-import GraphComponentFull from "../components/GraphComponentFull";
 
 const Devices = () => {
   return (
     <Fragment>
-      <LayoutComponent name="Devices"></LayoutComponent>
+      <LayoutComponent name="Devices">
+        <DeviceComponent />
+      </LayoutComponent>
     </Fragment>
   );
 };
