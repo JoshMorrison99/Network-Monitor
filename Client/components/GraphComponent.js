@@ -3,6 +3,7 @@ import axios from "axios";
 import useInterval from "react-useinterval";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
+import AliasDialog from "./AliasDialogComponent";
 
 const CreateLinks = (graph) => {
   var nodes = [];
@@ -26,14 +27,31 @@ const ForceGraph = (props) => {
   const [animatedLinks, setAnimatedLinks] = useState([]);
   const [counter, setCounter] = useState(0);
   const [graph, setGraph] = useState({});
+  const [devices, setDevices] = useState({});
 
   const Get_Devices = async () => {
     try {
       const response = await axios.get("http://localhost:8000/api/devicelist/");
       var new_graph = CreateLinks(response);
+      setDevices(response);
+      console.log(devices);
       setGraph(() => new_graph);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const nodeClicked = (nodeIP) => {
+    console.log(nodeIP);
+    for (var i = 0; i < devices["data"].length; i++) {
+      if (devices["data"][i]["ip"] == nodeIP["ip"]) {
+        console.log(devices["data"][i]);
+        <AliasDialog
+          ip={devices["data"][i]["ip"]}
+          mac={devices["data"][i]["mac"]}
+          alias={devices["data"][i]["alias"]}
+        />;
+      }
     }
   };
 
@@ -125,10 +143,6 @@ const ForceGraph = (props) => {
       </g>
     </Fragment>
   );
-};
-
-const nodeClicked = (node) => {
-  console.log(node);
 };
 
 export default ForceGraph;

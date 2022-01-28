@@ -3,12 +3,12 @@ import { Fragment } from "react";
 import LayoutComponent from "../components/LayoutComponent";
 import GraphComponentFull from "../components/GraphComponentFull";
 
-const Dashboard = () => {
+const Traffic = () => {
   return (
     <Fragment>
-      <LayoutComponent name="Dashboard"></LayoutComponent>
+      <LayoutComponent name="Traffic"></LayoutComponent>
     </Fragment>
   );
 };
 
-export default Dashboard;
+export default Traffic;

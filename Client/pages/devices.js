@@ -3,12 +3,12 @@ import { Fragment } from "react";
 import LayoutComponent from "../components/LayoutComponent";
 import GraphComponentFull from "../components/GraphComponentFull";
 
-const Dashboard = () => {
+const Devices = () => {
   return (
     <Fragment>
-      <LayoutComponent name="Dashboard"></LayoutComponent>
+      <LayoutComponent name="Devices"></LayoutComponent>
     </Fragment>
   );
 };
 
-export default Dashboard;
+export default Devices;
