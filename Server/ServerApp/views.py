@@ -35,6 +35,9 @@ def DeviceScan(request):
         if created == False:
             # Update last seen 
             obj.last_seen = timezone.localtime(timezone.now())
+            obj.save()
+    
+    ARPScan()
     return Response(status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -47,4 +50,22 @@ def UpdateAlias(request):
         device.alias = request.data["alias"]
         device.save()
     return Response(serializer.data)
+
+
+# TODO: Fix this
+def ARPScan():
+    ips = []
+    macs = []
+    response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst="192.168.2.0/24"),timeout=2)
+    for i in response:
+        if(i[1].psrc != None or i[1].hwsrc != None):
+            ips.append(i[1].psrc)      #  SOURCE IP ADDRESS
+            macs.append(i[1].hwsrc)    #  SOURCE MAC ADDRESS
+
+    # i[1] are all the received packets from response list
+    # i[0] are all the sent packets from response list
+    
+    for i in range(len(ips)):
+        device = Device.objects.get(ip=ips[i])
+        device.mac = macs[i]
 

@@ -88,7 +88,7 @@ const LayoutComponent = (props) => {
     if (scanActive) {
       setScanCounter(scanCounter + 1);
       console.log(scanCounter);
-      if (scanCounter == 900) {
+      if (scanCounter >= 900) {
         // button get ability to runs every 15 minutes
         setscanActive(false);
         setScanCounter(0);
