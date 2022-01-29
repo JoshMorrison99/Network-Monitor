@@ -26,6 +26,14 @@ const ForceGraph = (props) => {
   const [animatedLinks, setAnimatedLinks] = useState([]);
   const [graph, setGraph] = useState({});
   const [devices, setDevices] = useState({});
+  const [clickedIP, setClickedIP] = React.useState(false);
+  const [clickedMAC, setClickedMAC] = React.useState(false);
+  const [clickedAlias, setClickedAlias] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const Get_Devices = async () => {
     try {
@@ -44,11 +52,10 @@ const ForceGraph = (props) => {
     for (var i = 0; i < devices["data"].length; i++) {
       if (devices["data"][i]["ip"] == nodeIP["ip"]) {
         console.log(devices["data"][i]);
-        <AliasDialog
-          ip={devices["data"][i]["ip"]}
-          mac={devices["data"][i]["mac"]}
-          alias={devices["data"][i]["alias"]}
-        />;
+        setClickedIP(devices["data"][i]["ip"]);
+        setClickedMAC(devices["data"][i]["mac"]);
+        setClickedAlias(devices["data"][i]["alias"]);
+        setOpen(true);
       }
     }
   };
@@ -116,6 +123,15 @@ const ForceGraph = (props) => {
           </text>
         ))}
       </g>
+      {open ? (
+        <AliasDialog
+          handleClose={handleClose}
+          open={open}
+          ip={clickedIP}
+          mac={clickedMAC}
+          alias={clickedAlias}
+        />
+      ) : null}
     </Fragment>
   );
 };

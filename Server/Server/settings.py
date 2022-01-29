@@ -98,6 +98,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Server.wsgi.application'
 
+USE_TZ = True # Enables timezone use
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

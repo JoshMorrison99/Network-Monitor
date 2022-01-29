@@ -217,26 +217,33 @@ const LayoutComponent = (props) => {
           </List>
           <Divider />
           <List>
-            <div>
-              <ListItem button onClick={toggleScan} disabled={scanActive}>
-                <ListItemIcon>
-                  <RadarIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Fragment>
-                      {scanActive ? (
-                        <Tooltip title="Network scans can only be done every 600 seconds">
+            <Tooltip
+              title={
+                scanActive
+                  ? "Network scans can only be done every 600 seconds"
+                  : ""
+              }
+            >
+              <div>
+                <ListItem button onClick={toggleScan} disabled={scanActive}>
+                  <ListItemIcon>
+                    <RadarIcon />
+                  </ListItemIcon>
+
+                  <ListItemText
+                    primary={
+                      <Fragment>
+                        {scanActive ? (
                           <Typography>Network Scan {scanCounter}</Typography>
-                        </Tooltip>
-                      ) : (
-                        <Typography>Network Scan </Typography>
-                      )}
-                    </Fragment>
-                  }
-                />
-              </ListItem>
-            </div>
+                        ) : (
+                          <Typography>Network Scan </Typography>
+                        )}
+                      </Fragment>
+                    }
+                  />
+                </ListItem>
+              </div>
+            </Tooltip>
           </List>
         </Drawer>
         <Box

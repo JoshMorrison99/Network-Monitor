@@ -30,6 +30,17 @@ const DatePrettifier = (date) => {
   var year = date.slice(0, 4);
   var month = date.slice(5, 7);
   var day = date.slice(8, 10);
+  var hour = date.slice(11, 14);
+  var displayHour = 0;
+  var minute = date.slice(14, 16);
+  var ampm = "";
+
+  if (hour.slice(0, 2) > 12) {
+    ampm = "pm";
+    displayHour = hour.slice(0, 2) - 12;
+  } else {
+    ampm = "am";
+  }
 
   var index = 0;
   if (month[0] == 0) {
@@ -37,7 +48,19 @@ const DatePrettifier = (date) => {
   } else {
     index = month;
   }
-  return day + " " + months[index] + " " + year;
+  return (
+    day +
+    " " +
+    months[index] +
+    " " +
+    year +
+    ", " +
+    displayHour +
+    ":" +
+    minute +
+    "" +
+    ampm
+  );
 };
 
 const DeviceComponent = () => {

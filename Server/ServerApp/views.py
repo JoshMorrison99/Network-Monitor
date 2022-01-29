@@ -31,11 +31,20 @@ def DeviceScan(request):
             devices.append(str(ip))
 
     for device in devices:
-        obj, created = Device.objects.get_or_create(ip=device, mac=None, alias=None)
+        obj, created = Device.objects.get_or_create(ip=device)
         if created == False:
             # Update last seen 
             obj.last_seen = timezone.now()
-            pass
     return Response(status.HTTP_200_OK)
 
+@api_view(['POST'])
+def UpdateAlias(request):
+    serializer = DeviceSerializer(data=request.data)
+    print(request.data)
+    print(request.data["ip"])
+    if serializer.is_valid():
+        device = Device.objects.get(ip=request.data["ip"])
+        device.alias = request.data["alias"]
+        device.save()
+    return Response(serializer.data)
 

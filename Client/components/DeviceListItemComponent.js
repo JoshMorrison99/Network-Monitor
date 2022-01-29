@@ -5,7 +5,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
-import InboxIcon from "@mui/icons-material/Inbox";
+import TvIcon from "@mui/icons-material/Tv";
 import DraftsIcon from "@mui/icons-material/Drafts";
 import { Typography } from "@mui/material";
 
@@ -15,7 +15,7 @@ const DeviceListItemComponent = (props) => {
       <ListItem alignItems="flex-start">
         <ListItemButton>
           <ListItemIcon>
-            <InboxIcon />
+            <TvIcon />
           </ListItemIcon>
           <ListItemText
             primary={props.name}
