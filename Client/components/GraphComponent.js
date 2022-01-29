@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, Fragment } from "react";
 import axios from "axios";
-import useInterval from "react-useinterval";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import AliasDialog from "./AliasDialogComponent";
@@ -25,7 +24,6 @@ const CreateLinks = (graph) => {
 const ForceGraph = (props) => {
   const [animatedNodes, setAnimatedNodes] = useState([]);
   const [animatedLinks, setAnimatedLinks] = useState([]);
-  const [counter, setCounter] = useState(0);
   const [graph, setGraph] = useState({});
   const [devices, setDevices] = useState({});
 
@@ -54,29 +52,6 @@ const ForceGraph = (props) => {
       }
     }
   };
-
-  const Scan_Devices = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/api/devicescan/");
-      console.log(response);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const timer = () => {
-    setCounter(counter + 1);
-    console.log(counter);
-    console.log("Polling...");
-    if (counter == 60) {
-      // runs every 10 minutes
-      console.log("getting devices");
-      Scan_Devices();
-      Get_Devices();
-      setCounter(0);
-    }
-  };
-  useInterval(timer, 10000);
 
   useEffect(() => {
     Get_Devices();

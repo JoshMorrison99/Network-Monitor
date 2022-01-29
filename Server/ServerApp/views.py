@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import DeviceSerializer 
 from rest_framework import status
+from django.utils import timezone
 
 @api_view(['GET'])
 def DeviceList(request):
@@ -33,6 +34,7 @@ def DeviceScan(request):
         obj, created = Device.objects.get_or_create(ip=device, mac=None, alias=None)
         if created == False:
             # Update last seen 
+            obj.last_seen = timezone.now()
             pass
     return Response(status.HTTP_200_OK)
 

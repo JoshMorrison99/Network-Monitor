@@ -7,7 +7,7 @@ class Device(models.Model):
     mac = models.CharField(max_length=20, null=True)
     alias = models.CharField(max_length=20, null=True)
     date_found = models.DateTimeField(default=timezone.now)
-    #last_seen = models.DateTimeField(default=timezone.now)
+    last_seen = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.ip
