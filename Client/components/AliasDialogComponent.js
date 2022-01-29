@@ -9,8 +9,10 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { Divider, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import axios from "axios";
+import { useRouter } from "next/router";
 
 export default function FormDialog(props) {
+  const router = useRouter();
   const [alias, setAlias] = useState("");
   const handleChange = async () => {
     console.log("handle change");
@@ -20,6 +22,13 @@ export default function FormDialog(props) {
         { alias: alias, ip: props.ip }
       );
       console.log(response);
+      router.push(
+        {
+          pathname: "/devices",
+        },
+        undefined,
+        { shallow: true }
+      );
     } catch (err) {
       console.log(err);
     }
