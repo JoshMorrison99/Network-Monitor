@@ -88,8 +88,8 @@ const LayoutComponent = (props) => {
     if (scanActive) {
       setScanCounter(scanCounter + 1);
       console.log(scanCounter);
-      if (scanCounter == 600) {
-        // button get ability to runs every 10 minutes
+      if (scanCounter == 900) {
+        // button get ability to runs every 15 minutes
         setscanActive(false);
         setScanCounter(0);
       }
@@ -220,7 +220,7 @@ const LayoutComponent = (props) => {
             <Tooltip
               title={
                 scanActive
-                  ? "Network scans can only be done every 600 seconds"
+                  ? "Network scans can only be done every 900 seconds"
                   : ""
               }
             >

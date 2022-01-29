@@ -34,7 +34,7 @@ def DeviceScan(request):
         obj, created = Device.objects.get_or_create(ip=device)
         if created == False:
             # Update last seen 
-            obj.last_seen = timezone.now()
+            obj.last_seen = timezone.localtime(timezone.now())
     return Response(status.HTTP_200_OK)
 
 @api_view(['POST'])

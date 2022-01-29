@@ -35,6 +35,29 @@ const ForceGraph = (props) => {
     setOpen(false);
   };
 
+  const ip_or_alias = (node) => {
+    for (var i = 0; i < devices["data"].length; i++) {
+      if (devices["data"][i]["ip"] == node.ip) {
+        if (
+          devices["data"][i]["alias"] != null &&
+          devices["data"][i]["alias"] != "null"
+        ) {
+          return (
+            <text x={node.x - 45} y={node.y - 35} key={uuidv4()}>
+              {devices["data"][i]["alias"]}
+            </text>
+          );
+        } else {
+          return (
+            <text x={node.x - 45} y={node.y - 35} key={uuidv4()}>
+              {devices["data"][i]["ip"]}
+            </text>
+          );
+        }
+      }
+    }
+  };
+
   const Get_Devices = async () => {
     try {
       const response = await axios.get("http://localhost:8000/api/devicelist/");
@@ -116,13 +139,7 @@ const ForceGraph = (props) => {
           />
         ))}
       </g>
-      <g>
-        {animatedNodes.map((node) => (
-          <text x={node.x - 45} y={node.y - 35} key={uuidv4()}>
-            {node.ip}
-          </text>
-        ))}
-      </g>
+      <g>{animatedNodes.map((node) => ip_or_alias(node))}</g>
       {open ? (
         <AliasDialog
           handleClose={handleClose}

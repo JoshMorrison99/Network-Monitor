@@ -46,10 +46,14 @@ export default function FormDialog(props) {
               {"Alias: " + props.alias}{" "}
             </Box>
           </DialogContentText>
-          <DialogContentText>{""}</DialogContentText>
-          <DialogContentText>
+          <DialogContentText mb={4}>
             Changing the alias of a device will make it easier to understand
             whose device is on the network.
+          </DialogContentText>
+          <DialogContentText>
+            <Box fontStyle="italic">
+              Put null if you want the IP to be displayed.
+            </Box>
           </DialogContentText>
           <TextField
             autoFocus
@@ -60,6 +64,7 @@ export default function FormDialog(props) {
             fullWidth
             variant="standard"
             onChange={(e) => setAlias(e.target.value)}
+            inputProps={{ maxLength: 20 }}
           />
         </DialogContent>
         <DialogActions>
