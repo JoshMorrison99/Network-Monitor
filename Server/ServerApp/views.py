@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from .serializers import DeviceSerializer 
 from rest_framework import status
 from django.utils import timezone
+import concurrent.futures
 
 @api_view(['GET'])
 def DeviceList(request):
@@ -15,42 +16,72 @@ def DeviceList(request):
     serializer = DeviceSerializer(devices, many=True)
     return Response(serializer.data)
     
+def DeviceThreadedScanner(in_ip):
+    defaultGateway = GetDefaultGateway()
+    ip = defaultGateway+str(in_ip)
+
+    response = scapy.sr1(scapy.IP(dst=(ip))/scapy.ICMP(),timeout=1, verbose=0)
+    if(response is None):
+        print(f"{ip} is not up")
+    else:
+        print(f"{ip} is up") 
+
+        # create or update device 
+        obj, created = Device.objects.get_or_create(ip=str(ip))
+        if created == False:
+            # Update last seen 
+            obj.last_seen = timezone.localtime(timezone.now())
+            obj.save()
+
+        # ARP SCAN
+        response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=(ip)),timeout=1)
+        if(response != None):
+            try:
+                device = Device.objects.get(ip=str(ip))
+                device.mac = response[0][1].hwsrc
+                device.save()
+            except Device.DoesNotExist:
+                device = None
+
 
 @api_view(['GET'])
 def DeviceScan(request):
-    defaultGateway = GetDefaultGateway()
-    network = defaultGateway + ".0/24"
-    addresses = IPv4Network(network)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(DeviceThreadedScanner, list(range(256)))
+    # defaultGateway = GetDefaultGateway()
+    # network = defaultGateway + ".0/24"
+    # addresses = IPv4Network(network)
 
-    for ip in addresses:
-        response = scapy.sr1(scapy.IP(dst=str(ip))/scapy.ICMP(),timeout=1, verbose=0)
-        if(response is None):
-            print(f"{ip} is not up")
-        else:
-            print(f"{ip} is up") 
+    # for ip in addresses:
+    #     response = scapy.sr1(scapy.IP(dst=str(ip))/scapy.ICMP(),timeout=1, verbose=0)
+    #     if(response is None):
+    #         print(f"{ip} is not up")
+    #     else:
+    #         print(f"{ip} is up") 
 
-            # create or update device 
-            obj, created = Device.objects.get_or_create(ip=str(ip))
-            if created == False:
-                # Update last seen 
-                obj.last_seen = timezone.localtime(timezone.now())
-                obj.save()
+    #         # create or update device 
+    #         obj, created = Device.objects.get_or_create(ip=str(ip))
+    #         if created == False:
+    #             # Update last seen 
+    #             obj.last_seen = timezone.localtime(timezone.now())
+    #             obj.save()
 
-            # ARP SCAN
-            response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=str(ip)),timeout=1)
-            if(response != None):
-                try:
-                    device = Device.objects.get(ip=str(ip))
-                    device.mac = response[0][1].hwsrc
-                    device.save()
-                except Device.DoesNotExist:
-                    device = None
+    #         # ARP SCAN
+    #         response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=str(ip)),timeout=1)
+    #         if(response != None):
+    #             try:
+    #                 device = Device.objects.get(ip=str(ip))
+    #                 device.mac = response[0][1].hwsrc
+    #                 device.save()
+    #             except Device.DoesNotExist:
+    #                 device = None
 
 
     
     
     #ARPScan()
     return Response(status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def UpdateAlias(request):
@@ -67,7 +98,9 @@ def UpdateAlias(request):
 def GetDefaultGateway():
     gateway = scapy.conf.route.route("0.0.0.0")[2]
     lastIndex = gateway.rfind('.')
-    return gateway[:lastIndex]
+    return gateway[:lastIndex]+'.'
+
+
 
 
 # def ARPScan():
