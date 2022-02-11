@@ -10,7 +10,7 @@ from rest_framework import status
 from django.utils import timezone
 import concurrent.futures
 
-COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078]
+COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078,8009,9080,1080,9000]
 
 @api_view(['GET'])
 def DeviceList(request):

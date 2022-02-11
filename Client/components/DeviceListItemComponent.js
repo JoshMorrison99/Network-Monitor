@@ -55,6 +55,14 @@ const ReaderFriendlyPortConverter = (port_number) => {
     return "http-proxy";
   } else if (port_number == 62078) {
     return "iphone-sync";
+  } else if (port_number == 8009) {
+    return "ajp13";
+  } else if (port_number == 9080) {
+    return "glrpc";
+  } else if (port_number == 1080) {
+    return "socks";
+  } else if (port_number == 9000) {
+    return "cslistener";
   }
 };
 
