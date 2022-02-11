@@ -17,4 +17,7 @@
   - Django REST Framework
   - Requests
 - Git
+
 - Nmap --> for verification purposes
+- Ettercap --> for verification purposes
+- Wireshark --> for verification purposes

@@ -10,11 +10,29 @@ from rest_framework import status
 from django.utils import timezone
 import concurrent.futures
 
+COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078]
+
 @api_view(['GET'])
 def DeviceList(request):
     devices = Device.objects.all()
     serializer = DeviceSerializer(devices, many=True)
     return Response(serializer.data)
+
+def PortScanner(device):
+    print(device.ip)
+    src_port = 56235
+    open_ports = ""
+    for port in COMMON_PORTS:
+        print(port)
+        response = scapy.sr1(scapy.IP(dst=device.ip)/scapy.TCP(sport=src_port, dport=port, flags="S"), timeout=1)
+        if(response != None and response.getlayer(scapy.TCP).flags == "SA"):
+            # TCP:RA --> CLOSED
+            # TCP:SA --> OPEN (SYN-ACK)
+            open_ports += str(port) + "|"
+            print(f'{port} is open')
+    port_device = Device.objects.get(ip=str(device.ip))
+    port_device.open_ports = open_ports
+    port_device.save()
     
 def DeviceThreadedScanner(in_ip):
     defaultGateway = GetDefaultGateway()
@@ -55,6 +73,10 @@ def DeviceScan(request):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(DeviceThreadedScanner, list(range(256)))
 
+    allDevices = Device.objects.all()
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(PortScanner, allDevices)
     return Response(status.HTTP_200_OK)
 
 

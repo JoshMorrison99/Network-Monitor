@@ -26,6 +26,14 @@ const AliasPrettifier = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
+const ParseOpenPorts = (open_ports) => {
+  if (open_ports != null) {
+    var open = open_ports.split("|");
+    open.pop();
+    return open;
+  }
+};
+
 const DatePrettifier = (date) => {
   var year = date.slice(0, 4);
   var month = date.slice(5, 7);
@@ -82,9 +90,10 @@ const DeviceComponent = () => {
               AliasPrettifier(devices["data"][i]["last_seen"])
             )}
             mac_vendor={devices["data"][i]["mac_vendor"]}
+            open_ports={ParseOpenPorts(devices["data"][i]["open_ports"])}
           />
         );
-        console.log(devices["data"][i]["date_found"]);
+        console.log(ParseOpenPorts(devices["data"][i]["open_ports"]));
       }
       setItems(myItems);
     }
