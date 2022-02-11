@@ -15,5 +15,6 @@
   - Scapy
   - Django
   - Django REST Framework
+  - Requests
 - Git
 - Nmap --> for verification purposes

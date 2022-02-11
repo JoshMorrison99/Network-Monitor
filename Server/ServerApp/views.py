@@ -1,7 +1,7 @@
 import scapy.all as scapy
+import requests
 from ipaddress import IPv4Network
 from .models import Device
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -40,46 +40,21 @@ def DeviceThreadedScanner(in_ip):
                 device = Device.objects.get(ip=str(ip))
                 device.mac = response[0][1].hwsrc
                 device.save()
+
+                # Get and Set MAC vendor in the database
+                print(device.mac)
+                GetMacVendor(device.mac)
             except Device.DoesNotExist:
                 device = None
+        
+        
 
 
 @api_view(['GET'])
 def DeviceScan(request):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(DeviceThreadedScanner, list(range(256)))
-    # defaultGateway = GetDefaultGateway()
-    # network = defaultGateway + ".0/24"
-    # addresses = IPv4Network(network)
 
-    # for ip in addresses:
-    #     response = scapy.sr1(scapy.IP(dst=str(ip))/scapy.ICMP(),timeout=1, verbose=0)
-    #     if(response is None):
-    #         print(f"{ip} is not up")
-    #     else:
-    #         print(f"{ip} is up") 
-
-    #         # create or update device 
-    #         obj, created = Device.objects.get_or_create(ip=str(ip))
-    #         if created == False:
-    #             # Update last seen 
-    #             obj.last_seen = timezone.localtime(timezone.now())
-    #             obj.save()
-
-    #         # ARP SCAN
-    #         response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=str(ip)),timeout=1)
-    #         if(response != None):
-    #             try:
-    #                 device = Device.objects.get(ip=str(ip))
-    #                 device.mac = response[0][1].hwsrc
-    #                 device.save()
-    #             except Device.DoesNotExist:
-    #                 device = None
-
-
-    
-    
-    #ARPScan()
     return Response(status.HTTP_200_OK)
 
 
@@ -100,26 +75,12 @@ def GetDefaultGateway():
     lastIndex = gateway.rfind('.')
     return gateway[:lastIndex]+'.'
 
+def GetMacVendor(mac_address):
+    url = "https://api.macvendors.com/"
+    response = requests.get(url+mac_address)
+    print(response)
+    if(response.status_code == 200):
+        device = Device.objects.get(mac=str(mac_address))
+        device.mac_vendor = response.content.decode()
+        device.save()
 
-
-
-# def ARPScan():
-#     ips = []
-#     macs = []
-#     response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst="192.168.2.0/24"),timeout=3)
-#     for i in response:
-#         if(i[1].psrc != None or i[1].hwsrc != None):
-#             ips.append(i[1].psrc)      #  SOURCE IP ADDRESS
-#             macs.append(i[1].hwsrc)    #  SOURCE MAC ADDRESS
-
-#     # i[1] are all the received packets from response list
-#     # i[0] are all the sent packets from response list
-    
-#     for i in range(len(ips)):
-#         try:
-#             device = Device.objects.get(ip=ips[i])
-#             device.mac = macs[i]
-#             device.save()
-#         except Device.DoesNotExist:
-#             device = None
-        

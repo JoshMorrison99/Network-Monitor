@@ -81,6 +81,7 @@ const DeviceComponent = () => {
             last_seen={DatePrettifier(
               AliasPrettifier(devices["data"][i]["last_seen"])
             )}
+            mac_vendor={devices["data"][i]["mac_vendor"]}
           />
         );
         console.log(devices["data"][i]["date_found"]);
