@@ -60,7 +60,6 @@ const SettingsComponent = () => {
             />
             <ListItemText align="right">
               <Fragment>
-                {console.log(settings[0]["default_gateway"])}
                 <TextField
                   id="outlined-basic"
                   label={settings[0]["default_gateway"]}
