@@ -16,8 +16,10 @@ import Button from "@mui/material/Button";
 import SaveIcon from "@mui/icons-material/Save";
 import { settings } from "../../config.json";
 import axios from "axios";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const saveClicked = async (new_gateway) => {
+  deleteClicked();
   try {
     const response = await axios.post(
       "http://localhost:8000/api/updategateway/",
@@ -29,47 +31,88 @@ const saveClicked = async (new_gateway) => {
   }
 };
 
+const deleteClicked = async () => {
+  try {
+    const response = await axios.delete(
+      "http://localhost:8000/api/deletedatabase/"
+    );
+    console.log(response);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const SettingsComponent = () => {
   const [gateway, setGateway] = useState("");
   return (
-    <Box m={4}>
-      <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-        <ListItem>
-          <ListItemAvatar>
-            <Avatar>
-              <RouterIcon />
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary="Default Gateway" />
-          <ListItemText align="right">
-            <Fragment>
-              {console.log(settings[0]["default_gateway"])}
-              <TextField
-                id="outlined-basic"
-                label={settings[0]["default_gateway"]}
-                variant="outlined"
-                onChange={(e) => {
-                  console.log(e);
-                  setGateway(e.target.value);
-                }}
-              />
-            </Fragment>
-          </ListItemText>
-        </ListItem>
-      </List>
-      <Box textAlign="right" m={3}>
-        <Button
-          startIcon={<SaveIcon />}
-          color="primary"
-          variant="contained"
-          onClick={() => {
-            saveClicked(gateway);
-          }}
-        >
-          Save
-        </Button>
+    <Fragment>
+      <Box m={4}>
+        <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+          <ListItem>
+            <ListItemAvatar>
+              <Avatar>
+                <RouterIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary="Default Gateway"
+              secondary="Warning: changing the gateway will delete the database"
+            />
+            <ListItemText align="right">
+              <Fragment>
+                {console.log(settings[0]["default_gateway"])}
+                <TextField
+                  id="outlined-basic"
+                  label={settings[0]["default_gateway"]}
+                  variant="outlined"
+                  onChange={(e) => {
+                    console.log(e);
+                    setGateway(e.target.value);
+                  }}
+                />
+              </Fragment>
+            </ListItemText>
+          </ListItem>
+          <Box textAlign="right" m={3}>
+            <Button
+              startIcon={<SaveIcon />}
+              color="primary"
+              variant="contained"
+              onClick={() => {
+                saveClicked(gateway);
+              }}
+            >
+              Save
+            </Button>
+          </Box>
+        </List>
       </Box>
-    </Box>
+      <Box m={4} bottom="0px">
+        <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+          <ListItem>
+            <ListItemAvatar>
+              <Avatar>
+                <DeleteIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary="Clear Database" />
+            <ListItemText align="right">
+              <Fragment>
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={() => {
+                    deleteClicked();
+                  }}
+                >
+                  Delete
+                </Button>
+              </Fragment>
+            </ListItemText>
+          </ListItem>
+        </List>
+      </Box>
+    </Fragment>
   );
 };
 

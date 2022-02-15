@@ -102,6 +102,11 @@ def UpdateGateway(request):
         f.write(json_string)
     return Response(status=200)
 
+@api_view(['DELETE'])
+def DeleteDatabase(self):
+    Device.objects.all().delete()
+    return Response(status=200)
+
 
 def GetDefaultGatewayFromConfig():
     dirname = os.path.dirname(__file__)

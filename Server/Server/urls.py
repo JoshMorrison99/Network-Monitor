@@ -7,5 +7,6 @@ urlpatterns = [
     path('api/devicelist/', views.DeviceList),
     path('api/devicescan/', views.DeviceScan),
     path('api/updatealias/', views.UpdateAlias),
-    path('api/updategateway/', views.UpdateGateway)
+    path('api/updategateway/', views.UpdateGateway),
+    path('api/deletedatabase/', views.DeleteDatabase)
 ]
