@@ -63,6 +63,8 @@ const ReaderFriendlyPortConverter = (port_number) => {
     return "socks";
   } else if (port_number == 9000) {
     return "cslistener";
+  } else if (port_number == 88) {
+    return "kerberos-sec";
   }
 };
 

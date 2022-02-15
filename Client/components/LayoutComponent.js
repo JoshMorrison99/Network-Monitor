@@ -21,6 +21,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import GraphIcon from "@mui/icons-material/Timeline";
 import NetworkIcon from "@mui/icons-material/NetworkCheck";
 import DeviceIcon from "@mui/icons-material/PhoneAndroid";
+import SettingsIcon from "@mui/icons-material/Settings";
 import RadarIcon from "@mui/icons-material/Radar";
 import DeviceNetwork from "./GraphComponent";
 import Link from "next/link";
@@ -217,13 +218,7 @@ const LayoutComponent = (props) => {
           </List>
           <Divider />
           <List>
-            <Tooltip
-              title={
-                scanActive
-                  ? "Network scans can only be done every 900 seconds"
-                  : ""
-              }
-            >
+            <Tooltip title={scanActive ? "scanning..." : ""}>
               <div>
                 <ListItem button onClick={toggleScan} disabled={scanActive}>
                   <ListItemIcon>
@@ -245,6 +240,18 @@ const LayoutComponent = (props) => {
               </div>
             </Tooltip>
           </List>
+          <Box position="absolute" bottom="0px" mt={3} width="100%">
+            <List>
+              <Link href="/settings">
+                <ListItem button>
+                  <ListItemIcon>
+                    <SettingsIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Settings" />
+                </ListItem>
+              </Link>
+            </List>
+          </Box>
         </Drawer>
         <Box
           component="main"

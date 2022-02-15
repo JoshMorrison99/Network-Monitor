@@ -9,8 +9,11 @@ from .serializers import DeviceSerializer
 from rest_framework import status
 from django.utils import timezone
 import concurrent.futures
+import json
+import os
+from itertools import repeat
 
-COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078,8009,9080,1080,9000]
+COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078,8009,9080,1080,9000,88]
 
 @api_view(['GET'])
 def DeviceList(request):
@@ -19,23 +22,19 @@ def DeviceList(request):
     return Response(serializer.data)
 
 def PortScanner(device):
-    print(device.ip)
     src_port = 56235
     open_ports = ""
     for port in COMMON_PORTS:
-        print(port)
         response = scapy.sr1(scapy.IP(dst=device.ip)/scapy.TCP(sport=src_port, dport=port, flags="S"), timeout=1)
         if(response != None and response.getlayer(scapy.TCP).flags == "SA"):
             # TCP:RA --> CLOSED
             # TCP:SA --> OPEN (SYN-ACK)
             open_ports += str(port) + "|"
-            print(f'{port} is open')
     port_device = Device.objects.get(ip=str(device.ip))
     port_device.open_ports = open_ports
     port_device.save()
     
-def DeviceThreadedScanner(in_ip):
-    defaultGateway = GetDefaultGateway()
+def DeviceThreadedScanner(in_ip, defaultGateway):
     ip = defaultGateway+str(in_ip)
 
     response = scapy.sr1(scapy.IP(dst=(ip))/scapy.ICMP(),timeout=1, verbose=0)
@@ -70,8 +69,9 @@ def DeviceThreadedScanner(in_ip):
 
 @api_view(['GET'])
 def DeviceScan(request):
+    gateway = GetDefaultGatewayFromConfig()
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(DeviceThreadedScanner, list(range(256)))
+        executor.map(DeviceThreadedScanner, list(range(256)), repeat(gateway))
 
     allDevices = Device.objects.all()
 
@@ -91,11 +91,26 @@ def UpdateAlias(request):
         device.save()
     return Response(serializer.data)
 
+@api_view(['POST'])
+def UpdateGateway(request):
+    print(request.data['gateway'])
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, '../../config.json')
+    data = {'settings': [{'default_gateway':request.data['gateway']}]}
+    json_string = json.dumps(data)
+    with open(filename,'w') as f:
+        f.write(json_string)
+    return Response(status=200)
 
-def GetDefaultGateway():
-    gateway = scapy.conf.route.route("0.0.0.0")[2]
-    lastIndex = gateway.rfind('.')
-    return gateway[:lastIndex]+'.'
+
+def GetDefaultGatewayFromConfig():
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, '../../config.json')
+    with open(filename,'r') as f:
+        data = json.load(f)
+        gateway = data["settings"][0]["default_gateway"]
+        lastIndex = gateway.rfind('.')
+        return gateway[:lastIndex]+'.'
 
 def GetMacVendor(mac_address):
     url = "https://api.macvendors.com/"
