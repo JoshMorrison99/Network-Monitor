@@ -68,9 +68,26 @@ const StyledMenu = styled((props) => (
 const TrafficComponent = () => {
   const [devices, setDevices] = useState({});
   const [items, setItems] = useState([]);
-  const [m_adversary, m_setAdversary] = useState("");
+  const [m_adversary_mac, m_setAdversary_mac] = useState("");
+  const [m_adversary_ip, m_setAdversary_ip] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
+  const attackClicked = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/arppoisioning/",
+        {
+          adversary_mac: m_adversary_mac,
+          adversary_ip: m_adversary_ip,
+          gateway: settings[0]["default_gateway"],
+        }
+      );
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -80,8 +97,9 @@ const TrafficComponent = () => {
     setAnchorEl(null);
   };
 
-  const setAdversary = (mac) => {
-    m_setAdversary(mac);
+  const setAdversary = (mac, ip) => {
+    m_setAdversary_mac(mac);
+    m_setAdversary_ip(ip);
   };
 
   const Get_Devices = async () => {
@@ -104,6 +122,7 @@ const TrafficComponent = () => {
           myItems.push(
             <TrafficAdversaryListComponent
               mac={devices["data"][i]["mac"]}
+              ip={devices["data"][i]["ip"]}
               handleClose={handleClose}
               setAdversary={setAdversary}
             />
@@ -134,16 +153,22 @@ const TrafficComponent = () => {
               </Avatar>
             </ListItemAvatar>
             <ListItemText
-              primary={m_adversary == "" ? "Adversary" : m_adversary}
+              primary={
+                m_adversary_mac == "" ? "Select an adversary" : m_adversary_mac
+              }
             />
             <ListItemText>
               <Stack justifyContent="right" spacing={3} direction="row">
-                {m_adversary == "" ? (
+                {m_adversary_mac == "" ? (
                   <Button disabled variant="contained" color="error">
                     Attack
                   </Button>
                 ) : (
-                  <Button variant="contained" color="error">
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={attackClicked}
+                  >
                     Attack
                   </Button>
                 )}
