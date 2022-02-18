@@ -10,6 +10,7 @@ class Device(models.Model):
     last_seen = models.DateTimeField(default=timezone.localtime(timezone.now()))
     mac_vendor = models.CharField(max_length=100, null=True)
     open_ports = models.CharField(max_length=500,null=True)
+    is_new = models.BooleanField(default=True)
 
     def __str__(self):
         return self.ip

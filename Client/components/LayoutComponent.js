@@ -28,6 +28,9 @@ import Link from "next/link";
 import useInterval from "react-useinterval";
 import axios from "axios";
 import Tooltip from "@mui/material/Tooltip";
+import LinearProgress from "@mui/material/LinearProgress";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const drawerWidth = 240;
 
@@ -89,11 +92,20 @@ const LayoutComponent = (props) => {
     if (scanActive) {
       setScanCounter(scanCounter + 1);
       console.log(scanCounter);
-      if (scanCounter >= 0) {
-        // button get ability to runs every 15 minutes
+      if (scanCounter >= 60) {
+        // button get ability to runs every 60 Seconds
         setscanActive(false);
         setScanCounter(0);
       }
+    }
+  };
+
+  const Scan_Devices = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/devicescan/");
+      console.log(response);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -117,15 +129,6 @@ const LayoutComponent = (props) => {
     setscanActive(true);
 
     Scan_Devices();
-  };
-
-  const Scan_Devices = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/api/devicescan/");
-      console.log(response);
-    } catch (err) {
-      console.log(err);
-    }
   };
 
   return (
@@ -159,11 +162,6 @@ const LayoutComponent = (props) => {
             >
               {props.name}
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -218,27 +216,26 @@ const LayoutComponent = (props) => {
           </List>
           <Divider />
           <List>
-            <Tooltip title={scanActive ? "scanning..." : ""}>
-              <div>
-                <ListItem button onClick={toggleScan} disabled={scanActive}>
-                  <ListItemIcon>
-                    <RadarIcon />
-                  </ListItemIcon>
+            {scanActive ? <LinearProgress /> : null}
+            <div>
+              <ListItem button onClick={toggleScan} disabled={scanActive}>
+                <ListItemIcon>
+                  <RadarIcon />
+                </ListItemIcon>
 
-                  <ListItemText
-                    primary={
-                      <Fragment>
-                        {scanActive ? (
-                          <Typography>Network Scan {scanCounter}</Typography>
-                        ) : (
-                          <Typography>Network Scan </Typography>
-                        )}
-                      </Fragment>
-                    }
-                  />
-                </ListItem>
-              </div>
-            </Tooltip>
+                <ListItemText
+                  primary={
+                    <Fragment>
+                      {scanActive ? (
+                        <Typography>Network Scan {scanCounter}</Typography>
+                      ) : (
+                        <Typography>Network Scan </Typography>
+                      )}
+                    </Fragment>
+                  }
+                />
+              </ListItem>
+            </div>
           </List>
           <Box position="absolute" bottom="0px" mt={3} width="100%">
             <List>

@@ -17,6 +17,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import { settings } from "../../config.json";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const saveClicked = async (new_gateway) => {
   deleteClicked();
@@ -31,19 +33,37 @@ const saveClicked = async (new_gateway) => {
   }
 };
 
-const deleteClicked = async () => {
-  try {
-    const response = await axios.delete(
-      "http://localhost:8000/api/deletedatabase/"
-    );
-    console.log(response);
-  } catch (err) {
-    console.log(err);
-  }
-};
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={10} ref={ref} variant="filled" {...props} />;
+});
 
 const SettingsComponent = () => {
   const [gateway, setGateway] = useState("");
+  const [open, setOpen] = React.useState(false);
+
+  const vertical = "bottom";
+  const horizontal = "right";
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const deleteClicked = async () => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:8000/api/deletedatabase/"
+      );
+      console.log(response);
+      setOpen(true);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <Fragment>
       <Box m={4}>
@@ -111,6 +131,16 @@ const SettingsComponent = () => {
           </ListItem>
         </List>
       </Box>
+      <Snackbar
+        anchorOrigin={{ vertical, horizontal }}
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+          Database successfully deleted!
+        </Alert>
+      </Snackbar>
     </Fragment>
   );
 };
