@@ -15,3 +15,14 @@ class Device(models.Model):
     def __str__(self):
         return self.ip
 
+# Create your models here.
+class Packet(models.Model):
+    ethernet_destination = models.CharField(max_length=20)
+    ethernet_source = models.CharField(max_length=20)
+    
+    ip_destination = models.CharField(max_length=20)
+    ip_source = models.CharField(max_length=20)
+
+    tcp_destination_port = models.CharField(max_length=20)
+    tcp_source_port = models.CharField(max_length=20)
+    tcp_flag = models.CharField(max_length=20)

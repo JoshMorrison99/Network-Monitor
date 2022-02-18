@@ -2,6 +2,7 @@ import scapy.all as scapy
 import requests
 from ipaddress import IPv4Network
 from .models import Device
+from .models import Packet
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -141,21 +142,44 @@ def ArpPoisioning(request):
             pcap = scapy.sniff(count=5)
             for packet in pcap:
                 #print(packet.show())
-                if(packet.haslayer(scapy.Ether)):
-                    print(packet.show())
-                    ETHERNET_frame = packet.getlayer(scapy.Ether)
-                    ETHERNET_frame_destination = ETHERNET_frame.dst
-                    ETHERNET_frame_source = ETHERNET_frame.src
                 if(packet.haslayer(scapy.IP)):
                     IP_packet = packet.getlayer(scapy.IP)
-                    IP_packet_source = IP_packet.src
-                    IP_packet_destination = IP_packet.dst
-                if(packet.haslayer(scapy.TCP)):
-                    tcp_packet = packet.getlayer(scapy.TCP)
-                    TCP_source_port = tcp_packet.sport
-                    TCP_destination_port = tcp_packet.dport
-                    TCP_flag = tcp_packet.flags
-                    TCP_data = tcp_packet
+                    if(IP_packet.dst == adversary_ip or IP_packet.src == adversary_ip): # We only want to get packets frame the person we are attacking. there is no point on capturing our own data, it will only make things more crowded
+                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                        new_packet = Packet.objects.create()
+                        if(packet.haslayer(scapy.Ether)):
+                            # Ethernet Packet
+                            ETHERNET_frame = packet.getlayer(scapy.Ether)
+                            ETHERNET_frame_destination = ETHERNET_frame.dst
+                            ETHERNET_frame_source = ETHERNET_frame.src
+
+                            # Put Ethernet Packet in Database
+                            new_packet.ethernet_destination = ETHERNET_frame_destination
+                            new_packet.ethernet_source = ETHERNET_frame_source
+                        if(packet.haslayer(scapy.IP)):
+                            # IP Packet
+                            IP_packet = packet.getlayer(scapy.IP)
+                            IP_packet_source = IP_packet.src
+                            IP_packet_destination = IP_packet.dst
+
+                            # Put IP Packet in Database
+                            new_packet.ip_destination = IP_packet_destination
+                            new_packet.ip_source = IP_packet_source
+                        if(packet.haslayer(scapy.TCP)):
+                            # TCP Packet
+                            tcp_packet = packet.getlayer(scapy.TCP)
+                            TCP_source_port = tcp_packet.sport
+                            TCP_destination_port = tcp_packet.dport
+                            TCP_flag = tcp_packet.flags
+
+                            # Put TCP Packet in Database
+                            new_packet.tcp_destination_port = TCP_destination_port
+                            new_packet.tcp_source_port = TCP_source_port
+                            new_packet.tcp_flag = TCP_flag
+                        print("SAVING TO DATABASE")
+                        new_packet.save()
+
+
                 
                 
                     
