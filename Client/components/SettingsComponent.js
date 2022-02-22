@@ -94,6 +94,7 @@ const SettingsComponent = () => {
   const [m_adversary_mac, m_setAdversary_mac] = useState("");
   const [m_adversary_ip, m_setAdversary_ip] = useState("");
   const [open, setOpen] = React.useState(false);
+  const [openARPFIX, setOpenARPFIX] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open_arp = Boolean(anchorEl);
 
@@ -106,6 +107,7 @@ const SettingsComponent = () => {
     }
 
     setOpen(false);
+    setOpenARPFIX(false);
   };
 
   const deleteClicked = async () => {
@@ -179,6 +181,7 @@ const SettingsComponent = () => {
         ip_fix: ip,
         gateway: settings[0]["default_gateway"],
       });
+      setOpenARPFIX(true);
     } catch (err) {
       console.log(err);
     }
@@ -275,21 +278,37 @@ const SettingsComponent = () => {
                         aria-expanded={open_arp ? "true" : undefined}
                         variant="contained"
                         disableElevation
-                        onClick={handleClick_ARP}
+                        onClick={(e) => {
+                          handleClick_ARP(e), setOpenARPFIX(false);
+                        }}
                         endIcon={<KeyboardArrowDownIcon />}
                       >
                         Options
                       </Button>
-                      <Button
-                        startIcon={<HandymanIcon />}
-                        color="primary"
-                        variant="contained"
-                        onClick={() => {
-                          FixARPClicked(m_adversary_mac, m_adversary_ip);
-                        }}
-                      >
-                        Fix
-                      </Button>
+                      {m_adversary_mac == "" ? (
+                        <Button
+                          startIcon={<HandymanIcon />}
+                          color="primary"
+                          variant="contained"
+                          disabled
+                          onClick={() => {
+                            FixARPClicked(m_adversary_mac, m_adversary_ip);
+                          }}
+                        >
+                          Fix
+                        </Button>
+                      ) : (
+                        <Button
+                          startIcon={<HandymanIcon />}
+                          color="primary"
+                          variant="contained"
+                          onClick={() => {
+                            FixARPClicked(m_adversary_mac, m_adversary_ip);
+                          }}
+                        >
+                          Fix
+                        </Button>
+                      )}
                     </Stack>
                     <StyledMenu
                       id="demo-customized-menu"
@@ -317,6 +336,16 @@ const SettingsComponent = () => {
       >
         <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
           Database successfully deleted!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        anchorOrigin={{ vertical, horizontal }}
+        open={openARPFIX}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+          ARP fix request sent successfully!
         </Alert>
       </Snackbar>
     </Fragment>
