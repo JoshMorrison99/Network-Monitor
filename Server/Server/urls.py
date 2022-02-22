@@ -9,5 +9,6 @@ urlpatterns = [
     path('api/updatealias/', views.UpdateAlias),
     path('api/updategateway/', views.UpdateGateway),
     path('api/deletedatabase/', views.DeleteDatabase),
-    path('api/arppoisioning/', views.ArpPoisioning)
+    path('api/arppoisioning/', views.ArpPoisioning),
+    path('api/fixarp/', views.FixARP),
 ]
