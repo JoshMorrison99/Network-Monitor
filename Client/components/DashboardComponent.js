@@ -10,6 +10,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Stack from "@mui/material/Stack";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -41,6 +44,8 @@ const Item = styled(Paper)(({ theme }) => ({
 const DashboardComponent = () => {
   const [packets, setPackets] = useState([]);
   const [devices, setDevices] = useState({});
+  const [isAttacking, setIsAttacking] = useState(false);
+  const [scanningActive, setScanningActive] = useState(false);
   const [devicesList, setDevicesList] = useState([]);
 
   const Get_Packets = async () => {
@@ -119,13 +124,45 @@ const DashboardComponent = () => {
     Get_Devices();
   }, []);
 
+  useEffect(() => {
+    const isAttacking = localStorage.getItem("isAttacking");
+    const scanningActive = localStorage.getItem("scanningActive");
+    setIsAttacking(JSON.parse(isAttacking));
+    setScanningActive(JSON.parse(scanningActive));
+  }, []);
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={6}>
           <Bar options={options} data={data} />
         </Grid>
-        <Grid item xs={6}></Grid>
+        <Grid item xs={6}>
+          <Stack sx={{ width: "100%" }} spacing={3}>
+            {scanningActive ? (
+              <Alert severity="success">
+                <AlertTitle>Warning</AlertTitle>
+                Device scan is currently - <strong>active</strong>
+              </Alert>
+            ) : (
+              <Alert severity="error">
+                <AlertTitle>Warning</AlertTitle>
+                Device scan is currently - <strong>not active</strong>
+              </Alert>
+            )}
+            {isAttacking ? (
+              <Alert severity="success">
+                <AlertTitle>Warning</AlertTitle>
+                ARP poisioning attack is currently - <strong>active</strong>
+              </Alert>
+            ) : (
+              <Alert severity="error">
+                <AlertTitle>Warning</AlertTitle>
+                ARP poisioning attack is currently - <strong>not active</strong>
+              </Alert>
+            )}
+          </Stack>
+        </Grid>
         <Grid item xs={6}>
           <Item>xs=6</Item>
         </Grid>
