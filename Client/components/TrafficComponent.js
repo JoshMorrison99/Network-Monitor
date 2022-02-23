@@ -60,58 +60,6 @@ const StyledMenu = styled((props) => (
   },
 }));
 
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "Auguest",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const DatePrettifier = (date) => {
-  var year = date.slice(0, 4);
-  var month = date.slice(5, 7);
-  var day = date.slice(8, 10);
-  var hour = date.slice(11, 14);
-  var displayHour = 0;
-  var minute = date.slice(14, 16);
-  var ampm = "";
-
-  if (hour.slice(0, 2) > 12) {
-    ampm = "pm";
-    displayHour = hour.slice(0, 2) - 12;
-  } else {
-    ampm = "am";
-  }
-
-  var index = 0;
-  if (month[0] == 0) {
-    index = month[1];
-  } else {
-    index = month;
-  }
-  return (
-    day +
-    " " +
-    months[index] +
-    " " +
-    year +
-    ", " +
-    displayHour +
-    ":" +
-    minute +
-    "" +
-    ampm
-  );
-};
-
 const TrafficComponent = () => {
   const [devices, setDevices] = useState({});
   const [items, setItems] = useState([]);
@@ -155,6 +103,7 @@ const TrafficComponent = () => {
       } catch (err) {
         console.log(err);
       }
+      setIsAttacking(true);
     }
   };
 
@@ -241,6 +190,20 @@ const TrafficComponent = () => {
     Get_Devices();
     Get_Packets();
   }, []);
+
+  useEffect(() => {
+    const isAttacking = localStorage.getItem("isAttacking");
+    const adversary = localStorage.getItem("adversary");
+    if (isAttacking) {
+      setIsAttacking(JSON.parse(isAttacking));
+      m_setAdversary_mac(JSON.parse(adversary));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("isAttacking", JSON.stringify(isAttacking));
+    localStorage.setItem("adversary", JSON.stringify(m_adversary_mac));
+  });
 
   return (
     <Fragment>
