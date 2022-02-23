@@ -87,7 +87,6 @@ const TrafficComponent = () => {
       } catch (err) {
         console.log(err);
       }
-      setIsAttacking(false);
     } else {
       try {
         const response = await axios.post(
@@ -103,7 +102,6 @@ const TrafficComponent = () => {
       } catch (err) {
         console.log(err);
       }
-      setIsAttacking(true);
     }
   };
 
@@ -231,25 +229,41 @@ const TrafficComponent = () => {
                     variant="contained"
                     color="error"
                     onClick={() => {
-                      attackClicked(), setIsAttacking(true);
+                      attackClicked(), setIsAttacking(!isAttacking);
                     }}
                   >
                     {isAttacking == true ? "Stop" : "Attack"}
                   </Button>
                 )}
 
-                <Button
-                  id="demo-customized-button"
-                  aria-controls={open ? "demo-customized-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
-                  variant="contained"
-                  disableElevation
-                  onClick={handleClick}
-                  endIcon={<KeyboardArrowDownIcon />}
-                >
-                  Options
-                </Button>
+                {isAttacking ? (
+                  <Button
+                    id="demo-customized-button"
+                    aria-controls={open ? "demo-customized-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? "true" : undefined}
+                    variant="contained"
+                    disableElevation
+                    onClick={handleClick}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    disabled
+                  >
+                    Options
+                  </Button>
+                ) : (
+                  <Button
+                    id="demo-customized-button"
+                    aria-controls={open ? "demo-customized-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? "true" : undefined}
+                    variant="contained"
+                    disableElevation
+                    onClick={handleClick}
+                    endIcon={<KeyboardArrowDownIcon />}
+                  >
+                    Options
+                  </Button>
+                )}
               </Stack>
               <StyledMenu
                 id="demo-customized-menu"
