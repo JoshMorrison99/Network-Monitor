@@ -26,6 +26,18 @@ def DeviceList(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+def PacketProtocolAmount(request):
+    print("EHER")
+    packets = Packet.objects.all()
+    TCP = packets.filter(packet_type="TCP")
+    ARP = packets.filter(packet_type="ARP")
+    DNS = packets.filter(packet_type="DNS")
+    ICMP = packets.filter(packet_type="ICMP")
+    UDP = packets.filter(packet_type="UDP")
+    protocolAmounts = {"TCP":TCP.count(),"ARP":ARP.count(),"DNS":DNS.count(),"ICMP":ICMP.count(),"UDP":UDP.count()}
+    return Response(protocolAmounts)
+
+@api_view(['GET'])
 def PacketList(request):
     packets = Packet.objects.all()
     serializer = PacketSerializer(packets, many=True)
