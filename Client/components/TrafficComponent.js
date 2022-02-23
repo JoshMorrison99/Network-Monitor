@@ -68,24 +68,44 @@ const StyledMenu = styled((props) => (
 const TrafficComponent = () => {
   const [devices, setDevices] = useState({});
   const [items, setItems] = useState([]);
+  const [isAttacking, setIsAttacking] = useState(false);
   const [m_adversary_mac, m_setAdversary_mac] = useState("");
   const [m_adversary_ip, m_setAdversary_ip] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
 
   const attackClicked = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/arppoisioning/",
-        {
-          adversary_mac: m_adversary_mac,
-          adversary_ip: m_adversary_ip,
-          gateway: settings[0]["default_gateway"],
-        }
-      );
-      console.log(response);
-    } catch (err) {
-      console.log(err);
+    if (isAttacking) {
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/api/arppoisioning/",
+          {
+            adversary_mac: m_adversary_mac,
+            adversary_ip: m_adversary_ip,
+            gateway: settings[0]["default_gateway"],
+            isAttacking: isAttacking,
+          }
+        );
+        console.log(response);
+      } catch (err) {
+        console.log(err);
+      }
+      setIsAttacking(false);
+    } else {
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/api/arppoisioning/",
+          {
+            adversary_mac: m_adversary_mac,
+            adversary_ip: m_adversary_ip,
+            gateway: settings[0]["default_gateway"],
+            isAttacking: isAttacking,
+          }
+        );
+        console.log(response);
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -167,9 +187,11 @@ const TrafficComponent = () => {
                   <Button
                     variant="contained"
                     color="error"
-                    onClick={attackClicked}
+                    onClick={() => {
+                      attackClicked(), setIsAttacking(true);
+                    }}
                   >
-                    Attack
+                    {isAttacking == true ? "Stop" : "Attack"}
                   </Button>
                 )}
 

