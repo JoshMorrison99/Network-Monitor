@@ -129,7 +129,7 @@ const DashboardComponent = () => {
     const scanningActive = localStorage.getItem("scanningActive");
     setIsAttacking(JSON.parse(isAttacking));
     setScanningActive(JSON.parse(scanningActive));
-  }, []);
+  }, [scanningActive]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -163,10 +163,7 @@ const DashboardComponent = () => {
             )}
           </Stack>
         </Grid>
-        <Grid item xs={6}>
-          <Item>xs=6</Item>
-        </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <TableContainer component={Paper}>
             <Table
               sx={{ minWidth: 650 }}
