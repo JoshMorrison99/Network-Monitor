@@ -27,8 +27,8 @@ class Packet(models.Model):
     tcp_source_port = models.CharField(default=None, max_length=20, null=True, blank=True)
     tcp_flag = models.CharField(default=None, max_length=20, null=True, blank=True)
 
-    upd_destination_port = models.CharField(default=None, max_length=20, null=True, blank=True)
-    upd_source_port = models.CharField(default=None, max_length=20, null=True, blank=True)
+    udp_destination_port = models.CharField(default=None, max_length=20, null=True, blank=True)
+    udp_source_port = models.CharField(default=None, max_length=20, null=True, blank=True)
 
     arp_source_mac = models.CharField(default=None, max_length=20, null=True, blank=True)
     arp_destination_mac = models.CharField(default=None, max_length=20, null=True, blank=True)
@@ -36,5 +36,12 @@ class Packet(models.Model):
     arp_destination_ip = models.CharField(default=None, max_length=20, null=True, blank=True)
 
     raw_packet_data = models.CharField(default=None, max_length=65535, null=True, blank=True)
+
+    dns_packet_opcode = models.CharField(default=None, max_length=20, null=True, blank=True)
+    dns_packet_qd = models.CharField(default=None, max_length=20, null=True, blank=True)
+
+    icmp_packet_type = models.CharField(default=None, max_length=20, null=True, blank=True)
+
+    packet_type = models.CharField(default=None, max_length=20, null=True, blank=True)
 
     date_found = models.DateTimeField(default=timezone.localtime(timezone.now()))

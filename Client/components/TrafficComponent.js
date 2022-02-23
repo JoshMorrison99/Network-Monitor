@@ -12,11 +12,10 @@ import Menu from "@mui/material/Menu";
 import { styled, alpha } from "@mui/material/styles";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import TrafficAdversaryListComponent from "../components/TrafficAdversaryListComponent";
-import TrafficListItemComponent from "../components/TrafficListItemComponent";
 import axios from "axios";
 import Stack from "@mui/material/Stack";
 import { settings } from "../../config.json";
-import Divider from "@mui/material/Divider";
+import { DataGrid } from "@mui/x-data-grid";
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -61,25 +60,67 @@ const StyledMenu = styled((props) => (
   },
 }));
 
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "Auguest",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+const DatePrettifier = (date) => {
+  var year = date.slice(0, 4);
+  var month = date.slice(5, 7);
+  var day = date.slice(8, 10);
+  var hour = date.slice(11, 14);
+  var displayHour = 0;
+  var minute = date.slice(14, 16);
+  var ampm = "";
+
+  if (hour.slice(0, 2) > 12) {
+    ampm = "pm";
+    displayHour = hour.slice(0, 2) - 12;
+  } else {
+    ampm = "am";
+  }
+
+  var index = 0;
+  if (month[0] == 0) {
+    index = month[1];
+  } else {
+    index = month;
+  }
+  return (
+    day +
+    " " +
+    months[index] +
+    " " +
+    year +
+    ", " +
+    displayHour +
+    ":" +
+    minute +
+    "" +
+    ampm
+  );
+};
+
 const TrafficComponent = () => {
   const [devices, setDevices] = useState({});
   const [items, setItems] = useState([]);
-  const [items_packet, setItems_Packet] = useState([]);
   const [packets, setPackets] = useState([]);
   const [isAttacking, setIsAttacking] = useState(false);
   const [m_adversary_mac, m_setAdversary_mac] = useState("");
   const [m_adversary_ip, m_setAdversary_ip] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [filter, setFilter] = React.useState("None");
 
-  const [ethernet_count, set_ethernet_count] = React.useState(0);
-  const [ip_count, set_ip_count] = React.useState(0);
-  const [tcp_count, set_tcp_count] = React.useState(0);
-  const [udp_count, set_udp_count] = React.useState(0);
-  const [arp_count, set_arp_count] = React.useState(0);
-  const [dns_count, set_dns_count] = React.useState(0);
-  const [icmp_count, set_icmp_count] = React.useState(0);
-  const [raw_count, set_raw_count] = React.useState(0);
   const open = Boolean(anchorEl);
 
   const attackClicked = async () => {
@@ -148,87 +189,6 @@ const TrafficComponent = () => {
     }
   };
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "Auguest",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const DatePrettifier = (date) => {
-    var year = date.slice(0, 4);
-    var month = date.slice(5, 7);
-    var day = date.slice(8, 10);
-    var hour = date.slice(11, 14);
-    var displayHour = 0;
-    var minute = date.slice(14, 16);
-    var ampm = "";
-
-    if (hour.slice(0, 2) > 12) {
-      ampm = "pm";
-      displayHour = hour.slice(0, 2) - 12;
-    } else {
-      ampm = "am";
-    }
-
-    var index = 0;
-    if (month[0] == 0) {
-      index = month[1];
-    } else {
-      index = month;
-    }
-    return (
-      day +
-      " " +
-      months[index] +
-      " " +
-      year +
-      ", " +
-      displayHour +
-      ":" +
-      minute +
-      "" +
-      ampm
-    );
-  };
-
-  const Create_List_Packets = () => {
-    console.log(packets);
-    if (Object.keys(packets).length != 0) {
-      var myItems = [];
-      for (var i = 0; i < packets["data"].length; i++) {
-        myItems.push(
-          <TrafficListItemComponent
-            date_found={DatePrettifier(packets["data"][i]["date_found"])}
-            ethernet_destination={packets["data"][i]["ethernet_destination"]}
-            ethernet_source={packets["data"][i]["ethernet_source"]}
-            ip_destination={packets["data"][i]["ip_destination"]}
-            ip_source={packets["data"][i]["ip_source"]}
-            arp_destination_ip={packets["data"][i]["arp_destination_ip"]}
-            arp_destination_mac={packets["data"][i]["arp_destination_mac"]}
-            arp_source_ip={packets["data"][i]["arp_source_ip"]}
-            arp_source_mac={packets["data"][i]["arp_source_mac"]}
-            raw_packet_data={packets["data"][i]["raw_packet_data"]}
-            tcp_destination_port={packets["data"][i]["tcp_destination_port"]}
-            tcp_flag={packets["data"][i]["tcp_flag"]}
-            tcp_source_port={packets["data"][i]["tcp_source_port"]}
-            upd_destination_port={packets["data"][i]["upd_destination_port"]}
-            upd_source_port={packets["data"][i]["upd_source_port"]}
-          />
-        );
-      }
-      setItems_Packet(myItems);
-    }
-  };
-
   const Create_List = () => {
     if (Object.keys(devices).length != 0) {
       var myItems = [];
@@ -251,45 +211,37 @@ const TrafficComponent = () => {
     }
   };
 
-  const calculateNumPacketTypes = () => {
-    if (Object.keys(packets).length != 0) {
-      for (var i = 0; i < packets["data"].length; i++) {
-        if (packets["data"][i]["ethernet_destination"] != null) {
-          set_ethernet_count((ethernet_count) => ethernet_count + 1);
-        }
-        if (packets["data"][i]["ip_destination"] != null) {
-          set_ip_count((ip_count) => ip_count + 1);
-        }
-        if (packets["data"][i]["tcp_destination_port"] != null) {
-          set_tcp_count((tcp_count) => tcp_count + 1);
-        }
-        if (packets["data"][i]["upd_destination_port"] != null) {
-          set_udp_count((udp_count) => udp_count + 1);
-        }
-        if (packets["data"][i]["arp_destination_mac"] != null) {
-          set_arp_count((arp_count) => arp_count + 1);
-        }
-        if (packets["data"][i]["raw_packet_data"] != null) {
-          set_raw_count((raw_count) => raw_count + 1);
-        }
-      }
-    }
-  };
+  console.log(packets["data"]);
+  const columns = [
+    { field: "id", headerName: "ID" },
+    { field: "ip_source", headerName: "Source" },
+    { field: "ip_destination", headerName: "Destination" },
+    { field: "packet_type", headerName: "Protocol" },
+    { field: "date_found", headerName: "Date Found" },
+    { field: "tcp_source_port", headerName: "TCP Source Port" },
+    { field: "tcp_destination_port", headerName: "TCP Destingation Port" },
+    { field: "tcp_flag", headerName: "TCP Flag" },
+    { field: "upd_source_port", headerName: "UDP Source Port" },
+    { field: "upd_destination_port", headerName: "UDP Destination Port" },
+    { field: "arp_destination_ip", headerName: "ARP Destination IP" },
+    { field: "arp_destination_mac", headerName: "ARP Destination MAC" },
+    { field: "arp_source_ip", headerName: "ARP Source IP" },
+    { field: "arp_source_mac", headerName: "ARP Source MAC" },
+    { field: "dns_packet_opcode", headerName: "DNS Opcode" },
+    { field: "dns_packet_qd", headerName: "DNS Query Record" },
+    { field: "icmp_packet_type", headerName: "ICMP Type" },
+    { field: "raw_packet_data", headerName: "Raw Data" },
+  ];
 
   useEffect(() => {
     Create_List();
-    Create_List_Packets();
-    calculateNumPacketTypes();
-  }, [devices, packets]);
+  }, [devices]);
 
   useEffect(() => {
     Get_Devices();
     Get_Packets();
   }, []);
 
-  const filterClicked = (filter) => {
-    setFilter(filter);
-  };
   return (
     <Fragment>
       <Box m={4}>
@@ -351,114 +303,10 @@ const TrafficComponent = () => {
           </ListItem>
         </List>
       </Box>
-      <Box>
-        <Divider />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            "& > *": {
-              m: 1,
-            },
-          }}
-        >
-          <Stack direction="row" spacing={2}>
-            {filter == "Ethernet" ? (
-              <Button
-                onClick={() => filterClicked("Ethernet")}
-                variant="contained"
-              >
-                {"Ethernet " + ethernet_count}
-              </Button>
-            ) : (
-              <Button
-                onClick={() => filterClicked("Ethernet")}
-                variant="outlined"
-              >
-                {"Ethernet " + ethernet_count}
-              </Button>
-            )}
-            {filter == "IP" ? (
-              <Button onClick={() => filterClicked("IP")} variant="contained">
-                {"IP " + ip_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("IP")} variant="outlined">
-                {"IP " + ip_count}
-              </Button>
-            )}
-            {filter == "TCP" ? (
-              <Button onClick={() => filterClicked("TCP")} variant="contained">
-                {"TCP " + tcp_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("TCP")} variant="outlined">
-                {"TCP " + tcp_count}
-              </Button>
-            )}
-            {filter == "UDP" ? (
-              <Button onClick={() => filterClicked("UDP")} variant="contained">
-                {"UDP " + udp_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("UDP")} variant="outlined">
-                {"UDP " + udp_count}
-              </Button>
-            )}
-            {filter == "ARP" ? (
-              <Button Click={() => filterClicked("ARP")} variant="contained">
-                {"ARP " + arp_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("ARP")} variant="outlined">
-                {"ARP " + arp_count}
-              </Button>
-            )}
-            {filter == "DNS" ? (
-              <Button onClick={() => filterClicked("DNS")} variant="contained">
-                {"DNS " + dns_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("DNS")} variant="outlined">
-                {"DNS " + dns_count}
-              </Button>
-            )}
-            {filter == "ICMP" ? (
-              <Button onClick={() => filterClicked("ICMP")} variant="contained">
-                {"ICMP " + icmp_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("ICMP")} variant="outlined">
-                {"ICMP " + icmp_count}
-              </Button>
-            )}
-            {filter == "RAW" ? (
-              <Button onClick={() => filterClicked("RAW")} variant="contained">
-                {"RAW " + raw_count}
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("RAW")} variant="outlined">
-                {"RAW " + raw_count}
-              </Button>
-            )}
-            {filter == "None" ? (
-              <Button onClick={() => filterClicked("None")} variant="contained">
-                None
-              </Button>
-            ) : (
-              <Button onClick={() => filterClicked("None")} variant="outlined">
-                None
-              </Button>
-            )}
-          </Stack>
-        </Box>
-      </Box>
-      <Box sx={{ width: "95%", margin: "20px", bgcolor: "background.paper" }}>
-        <List sx={{ width: "95%", bgcolor: "background.paper" }}>
-          {items_packet}
-        </List>
-      </Box>
+
+      <div style={{ height: 700, width: "100%" }}>
+        <DataGrid rows={packets["data"]} columns={columns} pageSize={50} />
+      </div>
     </Fragment>
   );
 };
