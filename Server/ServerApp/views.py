@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import DeviceSerializer 
+from .serializers import PacketSerializer 
 from rest_framework import status
 from django.utils import timezone
 import concurrent.futures
@@ -22,6 +23,12 @@ isAttacking = False
 def DeviceList(request):
     devices = Device.objects.all()
     serializer = DeviceSerializer(devices, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def PacketList(request):
+    packets = Packet.objects.all()
+    serializer = PacketSerializer(packets, many=True)
     return Response(serializer.data)
 
 def PortScanner(device):
@@ -167,11 +174,10 @@ def ArpPoisioning(request):
         # PacketList 
         pcap = scapy.sniff(count=5)
         for packet in pcap:
-            #print(packet.show())
+            print(packet.show())
             if(packet.haslayer(scapy.IP)):
                 IP_packet = packet.getlayer(scapy.IP)
                 if(IP_packet.dst == adversary_ip or IP_packet.src == adversary_ip): # We only want to get packets frame the person we are attacking. there is no point on capturing our own data, it will only make things more crowded
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     new_packet = Packet.objects.create()
                     if(packet.haslayer(scapy.Ether)):
                         # Ethernet Packet
@@ -202,6 +208,37 @@ def ArpPoisioning(request):
                         new_packet.tcp_destination_port = TCP_destination_port
                         new_packet.tcp_source_port = TCP_source_port
                         new_packet.tcp_flag = TCP_flag
+
+                    if(packet.haslayer(scapy.UDP)):
+                        # UDP Packet
+                        udp_packet = packet.getlayer(scapy.UDP)
+                        UDP_source_port = udp_packet.sport
+                        UDP_destination_port = udp_packet.dport
+
+                        # Put UPP Packet in Database
+                        new_packet.udp_destination_port = UDP_destination_port
+                        new_packet.udp_source_port = UDP_source_port
+                    
+                    if(packet.haslayer(scapy.ARP)):
+                        # ARP Packet
+                        arp_packet = packet.getlayer(scapy.ARP)
+                        ARP_source_mac = arp_packet.hwsrc
+                        ARP_destination_mac = arp_packet.hwdst
+                        ARP_source_ip = arp_packet.psrc
+                        ARP_destination_ip = arp_packet.pdst
+
+                        # Put ARP Packet in Database
+                        new_packet.arp_source_mac = ARP_source_mac
+                        new_packet.arp_destination_mac = ARP_destination_mac
+                        new_packet.arp_source_ip = ARP_source_ip
+                        new_packet.arp_destination_ip = ARP_destination_ip
+
+                    if(packet.haslayer(scapy.Raw)):
+                        # RAW Packet
+                        raw_packet = packet.getlayer(scapy.Raw)
+
+                        # Put RAW Packet in Database
+                        new_packet.raw_packet_data = raw_packet
                     print("SAVING TO DATABASE")
                     new_packet.save()
                 

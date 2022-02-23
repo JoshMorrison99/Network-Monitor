@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/deletedatabase/', views.DeleteDatabase),
     path('api/arppoisioning/', views.ArpPoisioning),
     path('api/fixarp/', views.FixARP),
+    path('api/packetlist/', views.PacketList),
 ]
