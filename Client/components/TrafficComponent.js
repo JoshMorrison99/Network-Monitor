@@ -10,17 +10,12 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import { styled, alpha } from "@mui/material/styles";
-import MenuItem from "@mui/material/MenuItem";
-import EditIcon from "@mui/icons-material/Edit";
-import Divider from "@mui/material/Divider";
-import ArchiveIcon from "@mui/icons-material/Archive";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import TrafficAdversaryListComponent from "../components/TrafficAdversaryListComponent";
 import axios from "axios";
 import Stack from "@mui/material/Stack";
 import { settings } from "../../config.json";
+import { DataGrid } from "@mui/x-data-grid";
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -68,24 +63,45 @@ const StyledMenu = styled((props) => (
 const TrafficComponent = () => {
   const [devices, setDevices] = useState({});
   const [items, setItems] = useState([]);
+  const [packets, setPackets] = useState([]);
+  const [isAttacking, setIsAttacking] = useState(false);
   const [m_adversary_mac, m_setAdversary_mac] = useState("");
   const [m_adversary_ip, m_setAdversary_ip] = useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
+
   const open = Boolean(anchorEl);
 
   const attackClicked = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/arppoisioning/",
-        {
-          adversary_mac: m_adversary_mac,
-          adversary_ip: m_adversary_ip,
-          gateway: settings[0]["default_gateway"],
-        }
-      );
-      console.log(response);
-    } catch (err) {
-      console.log(err);
+    if (isAttacking) {
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/api/arppoisioning/",
+          {
+            adversary_mac: m_adversary_mac,
+            adversary_ip: m_adversary_ip,
+            gateway: settings[0]["default_gateway"],
+            isAttacking: isAttacking,
+          }
+        );
+        console.log(response);
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/api/arppoisioning/",
+          {
+            adversary_mac: m_adversary_mac,
+            adversary_ip: m_adversary_ip,
+            gateway: settings[0]["default_gateway"],
+            isAttacking: isAttacking,
+          }
+        );
+        console.log(response);
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -106,6 +122,15 @@ const TrafficComponent = () => {
     try {
       const response = await axios.get("http://localhost:8000/api/devicelist/");
       setDevices(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const Get_Packets = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/packetlist/");
+      setPackets(response);
     } catch (err) {
       console.log(err);
     }
@@ -133,14 +158,50 @@ const TrafficComponent = () => {
     }
   };
 
+  console.log(packets["data"]);
+  const columns = [
+    { field: "id", headerName: "ID" },
+    { field: "ip_source", headerName: "Source" },
+    { field: "ip_destination", headerName: "Destination" },
+    { field: "packet_type", headerName: "Protocol" },
+    { field: "date_found", headerName: "Date Found" },
+    { field: "tcp_source_port", headerName: "TCP Source Port" },
+    { field: "tcp_destination_port", headerName: "TCP Destingation Port" },
+    { field: "tcp_flag", headerName: "TCP Flag" },
+    { field: "upd_source_port", headerName: "UDP Source Port" },
+    { field: "upd_destination_port", headerName: "UDP Destination Port" },
+    { field: "arp_destination_ip", headerName: "ARP Destination IP" },
+    { field: "arp_destination_mac", headerName: "ARP Destination MAC" },
+    { field: "arp_source_ip", headerName: "ARP Source IP" },
+    { field: "arp_source_mac", headerName: "ARP Source MAC" },
+    { field: "dns_packet_opcode", headerName: "DNS Opcode" },
+    { field: "dns_packet_qd", headerName: "DNS Query Record" },
+    { field: "icmp_packet_type", headerName: "ICMP Type" },
+    { field: "raw_packet_data", headerName: "Raw Data" },
+  ];
+
   useEffect(() => {
     Create_List();
-    console.log(devices);
   }, [devices]);
 
   useEffect(() => {
     Get_Devices();
+    Get_Packets();
   }, []);
+
+  useEffect(() => {
+    const isAttacking = localStorage.getItem("isAttacking");
+    const adversary = localStorage.getItem("adversary");
+    if (isAttacking) {
+      setIsAttacking(JSON.parse(isAttacking));
+      m_setAdversary_mac(JSON.parse(adversary));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("isAttacking", JSON.stringify(isAttacking));
+    localStorage.setItem("adversary", JSON.stringify(m_adversary_mac));
+  });
 
   return (
     <Fragment>
@@ -167,24 +228,42 @@ const TrafficComponent = () => {
                   <Button
                     variant="contained"
                     color="error"
-                    onClick={attackClicked}
+                    onClick={() => {
+                      attackClicked(), setIsAttacking(!isAttacking);
+                    }}
                   >
-                    Attack
+                    {isAttacking == true ? "Stop" : "Attack"}
                   </Button>
                 )}
 
-                <Button
-                  id="demo-customized-button"
-                  aria-controls={open ? "demo-customized-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
-                  variant="contained"
-                  disableElevation
-                  onClick={handleClick}
-                  endIcon={<KeyboardArrowDownIcon />}
-                >
-                  Options
-                </Button>
+                {isAttacking ? (
+                  <Button
+                    id="demo-customized-button"
+                    aria-controls={open ? "demo-customized-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? "true" : undefined}
+                    variant="contained"
+                    disableElevation
+                    onClick={handleClick}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    disabled
+                  >
+                    Options
+                  </Button>
+                ) : (
+                  <Button
+                    id="demo-customized-button"
+                    aria-controls={open ? "demo-customized-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? "true" : undefined}
+                    variant="contained"
+                    disableElevation
+                    onClick={handleClick}
+                    endIcon={<KeyboardArrowDownIcon />}
+                  >
+                    Options
+                  </Button>
+                )}
               </Stack>
               <StyledMenu
                 id="demo-customized-menu"
@@ -201,6 +280,10 @@ const TrafficComponent = () => {
           </ListItem>
         </List>
       </Box>
+
+      <div style={{ height: 700, width: "100%" }}>
+        <DataGrid rows={packets["data"]} columns={columns} pageSize={50} />
+      </div>
     </Fragment>
   );
 };

