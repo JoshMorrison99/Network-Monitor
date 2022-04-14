@@ -3,6 +3,7 @@ import axios from "axios";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import AliasDialog from "./AliasDialogComponent";
+import { settings } from "../../config.json";
 
 const CreateLinks = (graph) => {
   var nodes = [];
@@ -13,7 +14,7 @@ const CreateLinks = (graph) => {
   }
 
   for (var i = 0; i < nodes.length; i++) {
-    var link = { source: "192.168.2.1", target: nodes[i] };
+    var link = { source: settings[0]["default_gateway"], target: nodes[i] };
     links.push(link);
   }
 

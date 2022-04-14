@@ -13,3 +13,5 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = '__all__'
+
+        

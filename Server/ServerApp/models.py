@@ -45,3 +45,4 @@ class Packet(models.Model):
     packet_type = models.CharField(default=None, max_length=20, null=True, blank=True)
 
     date_found = models.DateTimeField(default=timezone.localtime(timezone.now()))
+

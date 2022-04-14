@@ -40,6 +40,7 @@ Explaination of IPEnableRouter: https://docs.microsoft.com/en-us/troubleshoot/wi
 5. npm run dev
 6. Open Terminal 2
 7. cd /Server
-8. pip install -r requirements.txt
-9. python manage.py runserver
-10. Done
+8. sudo pip install -r requirements.txt
+9. sudo python3 manage.py migrate
+10. sudo python3 manage.py runserver
+11. Done
