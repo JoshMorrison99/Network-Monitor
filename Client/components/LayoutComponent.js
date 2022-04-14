@@ -96,6 +96,7 @@ const LayoutComponent = (props) => {
         // button get ability to runs every 60 Seconds
         setscanActive(false);
         setScanCounter(0);
+        window.location.reload();
       }
     }
   };
@@ -129,6 +130,7 @@ const LayoutComponent = (props) => {
     setscanActive(true);
 
     Scan_Devices();
+    window.location.reload();
   };
 
   return (

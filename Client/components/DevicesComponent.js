@@ -43,11 +43,14 @@ const DatePrettifier = (date) => {
   var minute = date.slice(14, 16);
   var ampm = "";
 
+  console.log(hour);
+
   if (hour.slice(0, 2) > 12) {
     ampm = "pm";
     displayHour = hour.slice(0, 2) - 12;
   } else {
     ampm = "am";
+    displayHour = hour.slice(0, 2);
   }
 
   var index = 0;

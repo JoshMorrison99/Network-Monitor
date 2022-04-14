@@ -58,7 +58,6 @@ def PortScanner(device):
     
 def DeviceThreadedScanner(in_ip, defaultGateway):
     ip = defaultGateway+str(in_ip)
-
     response = scapy.sr1(scapy.IP(dst=(ip))/scapy.ICMP(),timeout=1, verbose=0)
     if(response is None):
         print(f"{ip} is not up")
