@@ -11,6 +11,7 @@
   - MaterialUI
   - Axios
   - UUID
+  - Chart.js
 - Python
   - Scapy
   - Django
@@ -30,6 +31,10 @@
 - Step 4: Reboot
 
 Explaination of IPEnableRouter: https://docs.microsoft.com/en-us/troubleshoot/windows-client/networking/tcpip-and-nbt-configuration-parameters
+
+## You will need Pcap
+
+Windows Installer: https://www.winpcap.org/install/
 
 ## How to run
 
