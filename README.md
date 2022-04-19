@@ -23,7 +23,7 @@
 - Ettercap --> for verification purposes
 - Wireshark --> for verification purposes
 
-## How to Enable IP Forwarding on Windows 10
+## Required for ARP Poisioning: How to Enable IP Forwarding on Windows 10
 
 - Step 1: goto HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
 - Step 2: Create a new REG_DWORD nameed IPEnableRouter
@@ -32,11 +32,13 @@
 
 Explaination of IPEnableRouter: https://docs.microsoft.com/en-us/troubleshoot/windows-client/networking/tcpip-and-nbt-configuration-parameters
 
-## You will need Pcap
+## Required: You will need Pcap
 
 Windows Installer: https://www.winpcap.org/install/
 
 ## How to run
+
+**Note: You will need to run the software as administrator for it to work**
 
 1. git clone https://github.com/JoshMorrison99/Network-Monitor.git
 2. Open Terminal 1
